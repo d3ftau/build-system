@@ -45,6 +45,30 @@ fix.
 
 ---
 
+## Phase 0 — one-time setup
+
+Done once per machine, not once per project.
+
+- **Install a spec-driven plugin.** Either Superpowers
+  (`/plugin install superpowers@claude-plugins-official`) or GitHub Spec Kit
+  as the more structured alternative, if neither is already installed. This
+  playbook's commands assume one of them is available.
+- **`~/.claude/CLAUDE.md` is inherited global context.** It carries machine
+  facts and standing preferences into every project's session automatically —
+  project `CLAUDE.md` (Phase 2) adds project-specific rules on top of it, it
+  never needs to restate it.
+- **Standing rules, no exceptions:**
+  - Everything lives in git from the first commit.
+  - Config via environment variables only — never hardcoded paths or
+    hostnames.
+  - No hardcoded paths — a devbox-specific path baked into code breaks the
+    escape hatch (Phase 5) later, when it's expensive to fix.
+  - Secrets live in `.env`, never committed.
+  - Every project gets an Uptime Kuma monitor before it counts as done (see
+    the Phase 5 checklist).
+
+---
+
 ## Phase 0.5 — Discovery (optional)
 
 **Command:** `/discovery <whatever you've got, however half-formed>`
@@ -84,6 +108,8 @@ explicit "Out of scope" list, saved as `BRIEF.md`.
 
 If the brief can't fit in a paragraph, the scope is wrong. Cut it.
 
+**Commit:** `BRIEF.md` once synthesised.
+
 ---
 
 ## Phase 1.5 — Design
@@ -105,6 +131,8 @@ I pick one option or a hybrid. `DESIGN.md` records all the options
 considered, what was picked, and why — including what was rejected and
 why. That record is what stops me re-litigating the same decision in three
 months when I'm tempted to rebuild.
+
+**Commit:** `DESIGN.md` once the choice is recorded.
 
 ---
 
@@ -137,6 +165,9 @@ Verification gates are exact shell commands that must exit 0 — `make check`
 exits 0, `pytest` passes with no skipped tests, `curl -s localhost:PORT/health`
 returns 200. Commands, not adjectives.
 
+**Commit:** `CLAUDE.md` and `SPEC.md` once written — before starting the
+audit, so the pre-audit spec is a distinct commit from the post-audit one.
+
 ---
 
 ## Phase 2.5 — Audit
@@ -162,6 +193,11 @@ was never flagged at all. The second is worse — a phantom usually leaves a
 trace, a silent choice leaves nothing to find. Nothing tagged `[ASSUMED]`
 proceeds to Phase 3 unresolved.
 
+**Commit:** `SPEC.md` once every `[ASSUMED]` tag is resolved. This is the
+checkpoint that matters most — everything from Phase 3 onward builds
+against this spec, so the audited version needs to be the one in git, not
+just the one open in the editor.
+
 ---
 
 ## Phase 3 — Plan
@@ -183,6 +219,8 @@ something unclear, the spec was unclear.
 
 Fixing a wrong plan costs ten seconds — edit a text file. Fixing wrong code
 costs hours. That asymmetry is the entire point of this phase.
+
+**Commit:** `PLAN.md` once reviewed and approved.
 
 ---
 
@@ -232,6 +270,24 @@ it rather than forcing the implementation to comply.
 
 ## Phase 5 — Deploy
 
+### Where does it live?
+
+Devbox is the default. Route elsewhere when:
+
+| Situation | Where it lives instead |
+|---|---|
+| Needs to be up while devbox is down or I'm gaming | Cheap VPS |
+| Needs a public URL or real user accounts | Not self-hosted at all |
+| Sends email at volume | Managed sending service |
+| Outgrows SQLite or needs real concurrency | Managed Postgres |
+| Large file storage | Object storage |
+| It IS auth, payments, or compliance | Don't build it |
+
+Cloudflare Tunnel is the middle ground for genuine public access without
+leaving devbox — but it moves the service outside the tailnet boundary, so
+the "anyone who can reach it is already authenticated" assumption (see
+Opening principle) stops holding. Anything tunneled needs its own auth.
+
 **Command:** `/deploy`
 
 Creates a Dockerfile and `docker-compose.yml`: multi-stage build, minimal
@@ -253,6 +309,23 @@ Before calling it done:
 - [ ] **Reboot test** — the box (or at least the container) survives a
       restart and comes back up on its own. Wi-Fi associates slowly on
       cold boot on this machine; this is not optional.
+
+### Escape hatch
+
+Anything that ever goes external won't be self-hosted, so every project
+must stay liftable — off devbox and onto a VPS, someone else's box, or
+anywhere else — without a rewrite:
+
+- Config via environment variables only, nothing devbox-specific baked
+  into code.
+- No devbox-specific paths, IPs, or hostnames hardcoded anywhere.
+- `docker-compose.yml` would run unmodified on a different host — the
+  only per-machine input is `.env`.
+- State lives in a volume or a database, not scattered across the
+  filesystem in ad hoc locations.
+
+If lifting a project would be painful, that's a design smell — fix it now,
+while the project is small, not after it's grown around the assumption.
 
 ---
 
@@ -409,6 +482,7 @@ delete, not a schema to unwind.
 
 | Phase | Command(s) | Output |
 |---|---|---|
+| 0 Setup (once per machine) | plugin install | Spec-driven plugin, standing rules in place |
 | 0.5 Discovery | `/discovery`, `/roadmap` | `DISCOVERY.md`, `ROADMAP.md` (optional) |
 | 1 Brief | `/brief` | `BRIEF.md` |
 | 1.5 Design | `/design` | `DESIGN.md` |
