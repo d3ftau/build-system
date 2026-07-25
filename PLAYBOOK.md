@@ -34,6 +34,23 @@ fire on a lifecycle event and cannot be talked out of running.
 Use `CLAUDE.md` for conventions and preferences. Use hooks for anything
 that must actually hold — typechecks, tests, lint, secret scanning.
 
+Three generic hooks live in `hooks/` in this repo, symlinked to
+`~/.claude/hooks` and wired into `~/.claude/settings.json` so they apply to
+every project on this machine, not just one:
+
+- `git-guard.sh` (`PreToolUse`, `Bash`) — blocks any `git commit` that
+  bypasses hooks or signing (`--no-verify`, `--no-gpg-sign`,
+  `commit.gpgsign=false`), and blocks committing anything that looks like a
+  secret (`.env`, `.pem`, `.key`, `id_rsa`/`id_ed25519`/`id_ecdsa`).
+- `no-skipped-tests.sh` (`PostToolUse`, `Edit|Write`) — blocks an edit to a
+  test file that introduces a skip/xfail/disable marker (pytest, Jest/Mocha,
+  JUnit, xUnit, Rust, etc.), enforcing the gate-gaming guard below at the
+  moment the edit happens, not after the fact.
+- `verify-before-stop.sh` (`Stop`) — if the project has a `Makefile` with a
+  `check` target, runs `make check` before the turn is allowed to end and
+  blocks with the real failure output if it doesn't pass. No-ops for
+  projects without one (Phases 0–3, before a Makefile exists).
+
 **Never accept "it works" as evidence.** Demand the actual command output,
 not a summary of it. The failure mode isn't the agent lying — it's the
 agent believing itself.
@@ -53,6 +70,21 @@ Done once per machine, not once per project.
   (`/plugin install superpowers@claude-plugins-official`) or GitHub Spec Kit
   as the more structured alternative, if neither is already installed. This
   playbook's commands assume one of them is available.
+  Superpowers ships 14 skills; most duplicate a phase this playbook already
+  owns (or add branch/worktree/parallel-agent ceremony this solo scope
+  doesn't need), so only four are left enabled — the rest are turned off via
+  `skillOverrides` in `~/.claude/settings.json`:
+  - `systematic-debugging` — a stricter, proactive upgrade on `/stuck`
+  - `test-driven-development` — the playbook never specified *how* code
+    gets written inside a slice; this fills that gap
+  - `requesting-code-review` / `receiving-code-review` — a review step the
+    pipeline otherwise has no equivalent for
+  Note: Superpowers' `SessionStart` hook still force-injects its
+  `using-superpowers` dispatcher text every session regardless of
+  `skillOverrides` — that skill can't be actually invoked (blocked by the
+  override), but the injected text remains. There's no supported per-hook
+  toggle to suppress just that; living with the noise was chosen over
+  disabling the whole plugin or hand-patching the installed plugin cache.
 - **`~/.claude/CLAUDE.md` is inherited global context.** It carries machine
   facts and standing preferences into every project's session automatically —
   project `CLAUDE.md` (Phase 2) adds project-specific rules on top of it, it
