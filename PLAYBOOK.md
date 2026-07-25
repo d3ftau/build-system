@@ -99,12 +99,19 @@ manufacture a fake incremental plan.
 
 **Command:** `/brief <one sentence description>`
 
-Five targeted questions, one at a time, waiting for an answer before
-asking the next — covering what "done" looks like concretely, the smallest
-version I'd actually use, data and storage, edge cases and failure modes,
-and who else touches it. No solutions, no code. After the fifth answer, it
-synthesises everything into a plain markdown brief under 200 words, with an
-explicit "Out of scope" list, saved as `BRIEF.md`.
+First checks for `DISCOVERY.md` and `ROADMAP.md` in the current directory.
+If they exist, this brief is for a specific build that came out of that
+thinking, so it doesn't re-ask what's already settled — and if `ROADMAP.md`
+exists, it confirms which build in it this brief covers before going
+further.
+
+Then up to five targeted questions, one at a time, waiting for an answer
+before asking the next — covering only what isn't already answered: what
+"done" looks like concretely, the smallest version I'd actually use, data
+and storage, edge cases and failure modes, and who else touches it. Fewer
+than five if discovery already covered some. No solutions, no code. Once it
+has what it needs, it synthesises everything into a plain markdown brief
+under 200 words, with an explicit "Out of scope" list, saved as `BRIEF.md`.
 
 If the brief can't fit in a paragraph, the scope is wrong. Cut it.
 
