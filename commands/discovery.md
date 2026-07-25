@@ -14,4 +14,11 @@ Two things to hold onto as we talk:
   piece that I'd genuinely use even if I never built anything else? Be honest
   if the answer is that it doesn't decompose and it's just a big build.
 
-No specs, no code, no file structure. Just thinking.
+No specs, no code, no file structure. Just thinking — until the conversation
+reaches a real stopping point.
+
+When it does — the actual problem is named, and the one-build-or-several
+question is answered — write DISCOVERY.md: the reframe, the threads that got
+pushed on and how each resolved (including ones that didn't survive), and
+where it landed. Record the reasoning, not a transcript. This is what /brief
+and /roadmap read instead of this conversation, which won't exist for them.
