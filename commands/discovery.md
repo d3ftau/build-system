@@ -7,7 +7,13 @@ actually underneath it. Suggest angles I haven't considered, including ones
 that reframe the idea rather than extend it. Tell me if you think the
 interesting version is something adjacent to what I've described.
 
-Two things to hold onto as we talk:
+Three things to hold onto as we talk:
+- Early on, ask whether this already exists. Name the closest things that
+  already do it, and what specifically wouldn't fit. Not building it is the
+  best available outcome, and bending my habits around someone else's finished
+  tool usually beats maintaining my own. If you aren't current on what's out
+  there — and on product features you generally aren't — say so and make it
+  something for me to go and look at rather than guessing.
 - If you think I'm converging too early on the first workable idea, say so.
 - Somewhere in this, help me work out how big this thing really is: is it one
   build, or a product with several? If it's a product, what's the smallest

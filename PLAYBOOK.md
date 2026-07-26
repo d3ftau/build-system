@@ -175,6 +175,37 @@ months when I'm tempted to rebuild.
 
 ---
 
+## Phase 1.75 — Explore
+
+**Command:** `/explore`
+
+Everything up to here is talking and writing. This is the first step that
+touches the real world, and it comes before the spec on purpose: a data model
+written against an imagined export shape is a guess with 45 requirements
+resting on it.
+
+It reads `BRIEF.md` and `DESIGN.md`, pulls out every claim about the outside
+world the build depends on — what a service can do, what its free tier
+allows, what the real data actually contains, whether an export works for my
+account — and hands each one back as something for me to go and check, with
+the specific link or action. It does not answer them itself. Model recall on
+product features is stale, and marketing pages don't describe free tiers
+honestly; ten minutes of clicking beats both.
+
+Findings go in `EXPLORE.md`, each **CONFIRMED**, **WRONG** (with what's
+actually true), or **UNRESOLVED**. Unresolved items are bets: `/contract` tags
+every requirement resting on one `[BET]`, and `/plan` orders resolving them
+ahead of anything that assumes them.
+
+The failure this exists to prevent: asserting that a whole product category
+can't do something, when it's a standard feature. That doesn't just pick the
+wrong option — it invents a subsystem to work around a limitation that was
+never real.
+
+**Commit:** `EXPLORE.md` once the findings are recorded.
+
+---
+
 ## Phase 2 — Contract
 
 **Command:** `/contract`
@@ -416,6 +447,7 @@ README.
 ~/projects/<app-name>/
   README.md              what this is, in three sentences
   CLAUDE.md              project rules and hard constraints
+  EXPLORE.md             external claims checked against reality; open bets
   SPEC.md                the contract — requirements + verification gates
   PLAN.md                written by Claude Code in Plan Mode, reviewed by me
   DESIGN.md              options considered, choice made, and why
@@ -485,13 +517,15 @@ five-inch screen — it produces false confidence, not review.
 **Helps:** a spec with tagged provenance, verification gates that are
 commands rather than adjectives, one unknown per slice, faking the hard
 integration first, stopping at two failed attempts instead of thrashing, a
-scaffold that runs before any logic exists.
+scaffold that runs before any logic exists, and checking what external
+services actually do before designing around what they supposedly can't.
 
 **Breaks it:** vague requirements papered over with an agent's best guess,
 horizontal-layer builds with nothing runnable until the end, stacking a
 new API and a new library and a new pattern into one slice, treating a
-plan as sacred once written, and accepting "should work now" instead of
-pasted command output.
+plan as sacred once written, accepting "should work now" instead of
+pasted command output, and letting a finding that invalidates the plan get
+recorded as a note instead of reordering the plan.
 
 ---
 
@@ -517,6 +551,29 @@ delete, not a schema to unwind.
 
 ---
 
+## Worked example: the nag that didn't need building
+
+`DESIGN.md` for the task-extractor build stated, as fact: "no task app on any
+tier does repeat-until-done nagging." It was load-bearing — it justified
+rejecting an entire architecture, and committed the build to its own
+scheduler, its own notification channel, and local state to drive them.
+
+It's false. Recurring reminders are a standard feature of the product
+category; ClickUp does them on the free plan. The claim came from model
+recall, was never checked against a single features page, and survived
+`/brief`, `/design`, and into `/contract` before a passing remark in
+conversation happened to overturn it. Nothing in the process was looking.
+
+Caught, it removed a subsystem. Uncaught, it would have been days of work to
+rebuild something already sitting behind a checkbox in an app the build was
+already integrating with. Note the shape: the expensive error wasn't picking
+the wrong option, it was inventing work to route around a limitation that
+never existed. That's what Phase 1.75 exists to catch, and why it hands the
+checking to a human with a link rather than answering from training data —
+the same recall that produced the claim can't be what audits it.
+
+---
+
 ## Phase summary
 
 | Phase | Command(s) | Output |
@@ -525,6 +582,7 @@ delete, not a schema to unwind.
 | 0.5 Discovery | `/discovery`, `/roadmap` | `DISCOVERY.md`, `ROADMAP.md` (optional) |
 | 1 Brief | `/brief` | `BRIEF.md` |
 | 1.5 Design | `/design` | `DESIGN.md` |
+| 1.75 Explore | `/explore` | `EXPLORE.md` — external claims checked against reality |
 | 2 Contract | `/contract` | `CLAUDE.md`, `SPEC.md` |
 | 2.5 Audit | `/audit` (fresh session) | Resolved `[ASSUMED]` tags |
 | 3 Plan | `claude --permission-mode plan`, `/plan` | `PLAN.md` |

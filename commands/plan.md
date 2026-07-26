@@ -1,16 +1,36 @@
-Read CLAUDE.md and SPEC.md in full. Inspect the current directory.
+Read CLAUDE.md, SPEC.md, and EXPLORE.md (if it exists) in full. Inspect the
+current directory.
 
 Write PLAN.md containing:
-1. An ordered task list, each task small enough to complete and verify
-   independently. Task 1 must be the scaffold: a Makefile with `dev`/`test`/
-   `check` targets, `.env.example`, `.gitignore`, and one placeholder test
-   that currently fails — before any business logic. Every later task's
-   verification step depends on `make check` existing and being fast; skipping
-   this leaves nothing scoped to check against until the whole build is done.
-2. The exact files each task creates or modifies
-3. Which FR from SPEC.md each task satisfies
-4. The dependencies you'll install and why each is needed
-5. Anything in the spec that's ambiguous or that you'd do differently, stated
+1. **Unresolved bets — as the first numbered tasks, not a note.** Every claim
+   this build still rests on that is UNRESOLVED in EXPLORE.md, or tagged [BET]
+   or [ASSUMED] in SPEC.md, where being wrong would invalidate work rather than
+   just adjust it. Each becomes a task at the top of the list, ahead of
+   everything that assumes its answer — including the scaffold. Most cost
+   minutes and no code: request the export, open the file, check the feature
+   page.
+
+   If this produces a build order that looks wrong to you, order it this way
+   regardless and say why you disagree. A recommendation to do something early,
+   attached to a task numbered late, is not an ordering — /slice follows the
+   numbers, and prose never overrides them. Do not talk yourself out of
+   reordering on the grounds that the dependency is slow to arrive; slow is the
+   argument for starting it first, not for building against a guess meanwhile.
+2. Then the scaffold: a Makefile with `dev`/`test`/`check` targets,
+   `.env.example`, `.gitignore`, and one placeholder test that currently fails
+   — before any business logic. Every later task's verification depends on
+   `make check` existing and being fast; skipping it leaves nothing scoped to
+   check against until the whole build is done.
+3. Then the ordered task list, each task small enough to complete and verify
+   independently. Sequence it so something runs end to end as early as
+   possible, with the hard parts faked — a stubbed API response, three rows of
+   sample data — rather than building each layer fully in dependency order.
+   Replacing a fake is a small verifiable change; discovering at task 30 that
+   nothing has ever run together is not.
+4. The exact files each task creates or modifies
+5. Which FR from SPEC.md each task satisfies
+6. The dependencies you'll install and why each is needed
+7. Anything in the spec that's ambiguous or that you'd do differently, stated
    plainly
 
 Do not create or modify any source files. If you are not already in

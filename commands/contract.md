@@ -1,5 +1,9 @@
-Read BRIEF.md and DESIGN.md (if it exists) in the current directory. Read
-~/.claude/CLAUDE.md for machine and stack defaults.
+Read BRIEF.md, DESIGN.md, and EXPLORE.md (if they exist) in the current
+directory. Read ~/.claude/CLAUDE.md for machine and stack defaults.
+
+Anything EXPLORE.md marks WRONG is settled — write the spec against what was
+actually found, not what DESIGN.md assumed. Anything it marks UNRESOLVED is
+still a bet, and every requirement resting on one must say so.
 
 Create two files in this directory and nothing else. Do not write any source
 code, do not create directories, do not install anything.
@@ -12,7 +16,9 @@ code, do not create directories, do not install anything.
 
 2. SPEC.md — using this exact structure. Every Functional Requirement and every
    constraint must be tagged [STATED], [DERIVED] (show the chain back to
-   something stated), or [ASSUMED]:
+   something stated), [ASSUMED], or [BET] (rests on something still UNRESOLVED
+   in EXPLORE.md — name which claim, and what this requirement costs if that
+   claim turns out false):
 
    ## Purpose
    Two sentences.
