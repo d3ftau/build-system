@@ -20,6 +20,11 @@ Check for these files, in the order the playbook defines:
   resolved yet. Say explicitly: run /audit in a **brand-new `claude`
   session** in this directory — never continue the current session for
   this step, that defeats the point of the fresh-eyes read.
+- Whenever you report on a SPEC.md, count the **[AGREED]** tags and say how
+  many there are. These aren't blocking — they're requirements the model
+  proposed and Greg accepted, so they're legitimate but they're also the
+  cheapest scope to be wrong about. A spec where [AGREED] outnumbers [STATED]
+  is worth flagging out loud, whatever phase it's in.
 - SPEC.md has no [ASSUMED] tags left, no PLAN.md → Phase 3. Say explicitly:
   restart with `claude --permission-mode plan`, then run /plan — not just
   /plan in this session.

@@ -28,3 +28,30 @@ question is answered — write DISCOVERY.md: the reframe, the threads that got
 pushed on and how each resolved (including ones that didn't survive), and
 where it landed. Record the reasoning, not a transcript. This is what /brief
 and /roadmap read instead of this conversation, which won't exist for them.
+
+**Record who originated each requirement, not who last endorsed it.** Pushing
+on the idea is your job and you should keep doing it — but a requirement you
+argued me into is yours, and it has to stay visibly yours once it's written
+down. Every conclusion in DISCOVERY.md is marked either:
+
+- **I raised it** — I brought it up unprompted, in my own words.
+- **You proposed it, I agreed** — you made the case and I accepted it.
+
+"User confirmed X" is not me stating X, if you are the one who introduced X
+two sentences earlier. Written the first way, it becomes a fixed requirement
+nobody can question three documents later, because the file says I asked for
+it. Written the second way, it stays cuttable. Everything downstream reads
+this file and nothing downstream can recover the distinction if you lose it
+here.
+
+Two specific things to write down rather than smooth over:
+
+- **Where I pushed back and you kept the conclusion anyway.** If I disputed
+  part of your argument and you conceded the point but held the position,
+  that conclusion is weakly held at best. Say so in the file. Do not record
+  the concession as agreement.
+- **Requirements that only exist because of an argument you made about my
+  psychology** — what I will or won't keep doing, what I'll ignore, what I'll
+  find easy to forget. You are guessing about a person you cannot observe.
+  Mark those, because they are the ones most likely to be wrong and most
+  likely to add a whole subsystem.

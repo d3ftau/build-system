@@ -20,9 +20,28 @@ code, do not create directories, do not install anything.
    - What must never be installed or used
 
 2. SPEC.md — using this exact structure. Every Functional Requirement and every
-   constraint must be tagged [STATED], [DERIVED] (show the chain back to
-   something stated), [ASSUMED], or [BET] (rests on a BET in EXPLORE.md — name
-   which claim, and what this requirement costs if it turns out false):
+   constraint carries one of these tags:
+
+   - **[STATED]** — I raised this myself, unprompted, in my own words. Quote
+     them. Not "confirmed", not "agreed" — said, first, without being asked.
+   - **[AGREED]** — you proposed it and I said yes. Still yours, not mine.
+   - **[DERIVED]** — follows necessarily from a [STATED]. Show the chain. A
+     chain that bottoms out in an [AGREED] or an [ASSUMED] is not [DERIVED];
+     tag it as whatever it actually rests on.
+   - **[ASSUMED]** — you filled a gap and I never ruled on it.
+   - **[BET]** — rests on a BET in EXPLORE.md. Name which claim, and what this
+     requirement costs if it turns out false.
+
+   **A document is never a source.** "DESIGN.md says so" is not provenance —
+   DESIGN.md is your writing, and an earlier document asserting something
+   confidently is not evidence that anyone decided it. If the only thing
+   behind a requirement is a sentence in a document you wrote, it is
+   [ASSUMED], however settled the prose reads. Trace to a human or tag it
+   as yours.
+
+   **[AGREED] is not a lesser [STATED] — it is the scope you should cut
+   first.** When I ask why the build is this big, list the [AGREED] items
+   before anything else, because those are the ones I never asked for.
 
    ## Purpose
    Two sentences.

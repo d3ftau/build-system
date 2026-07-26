@@ -23,6 +23,44 @@ For each one, give me:
 Rank them. Anything that invalidates a design choice or adds a whole subsystem
 if it's wrong goes first.
 
+## The second kind: claims about your own judgment
+
+Separately, list every claim the build rests on about **how well a model will
+judge something** — that you can reliably tell one category of text from
+another, spot intent, score relevance, detect that a decision was made, or
+classify tone. These are as load-bearing as anything about an API, and they
+are more dangerous, because they arrive already dressed as architecture.
+
+The tell: a sentence in DESIGN.md that reads like a settled conclusion about
+structure ("the load-bearing signal is X, so every record must carry X") but
+is actually a prediction about a classifier's accuracy on messy real text that
+nobody has run.
+
+These do not go on my list to check — I cannot settle them by clicking
+anything, and neither can you by thinking harder about them. For each:
+
+1. The claim, quoted, and the structure that currently depends on it — the
+   field, the validation rule, the rejection reason, the pipeline stage.
+2. **The smallest real test that would settle it**: usually a handful of
+   genuine examples run through the actual prompt. Name the number and where
+   the examples come from.
+3. What survives if it's false. Be specific about whether the mechanism
+   adjusts or disappears.
+
+Then find your own counterexample before I have to. Take the claim and try to
+break it against one concrete, realistic case — not a clean one. If you can
+break it in a sentence, the claim was never sound and no amount of structure
+built on top will fix it. **When a counterexample lands, question whether the
+mechanism should exist at all before you reach for a special case to
+accommodate it.** Adding a category, an enum value, or an escape hatch to a
+mechanism that just failed its first real test keeps a broken idea alive by
+making it more complicated.
+
+Every one of these is a BET — they cannot be CONFIRMED by looking, only by
+running something. Which means the ones that invalidate the build get the
+smallest-slice treatment below, and they get it before any schema, validation
+rule, or dedicated failure mode is written around them.
+
 **Do not answer these from what you already know.** Your training data is stale
 on product features, pricing, and free-tier limits, and a marketing page won't
 tell me what a free tier actually does in practice. Your recall and sales copy
