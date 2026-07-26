@@ -294,10 +294,19 @@ verify independently, the exact files each task touches, which FR each
 task satisfies, the dependencies it'll install and why, and anything in
 the spec that's ambiguous or that it would do differently.
 
+**The order is the point, not just the contents.** `/plan` is told to
+sequence the list so one real path runs end to end as early as possible —
+the simplest case the app exists to handle, real code at every stage,
+widened afterwards. Phase 4's build philosophy has to be decided here,
+because `/slice` follows the numbers and can't recover an ordering the
+plan didn't have.
+
 I review `PLAN.md` on my phone, watching for wrong technology choices,
 missing FRs, tasks that are secretly four tasks, unnecessary dependencies,
-and — the most valuable part — the ambiguity section. If the agent found
-something unclear, the spec was unclear.
+and — before anything else — **how far down the list the first end-to-end
+run is.** If nothing runs whole until task 30, the plan is wrong regardless
+of how good the tasks are. Then the ambiguity section, the most valuable
+part: if the agent found something unclear, the spec was unclear.
 
 Fixing a wrong plan costs ten seconds — edit a text file. Fixing wrong code
 costs hours. That asymmetry is the entire point of this phase.
@@ -330,10 +339,18 @@ Never build all the models, then all the services, then all the routes:
 nothing works until the very end and there's no way to verify along the
 way.
 
-**Fake the hard parts first.** Hardcode the external API response, stub
-the LLM call, use three rows of sample data. Get the whole pipe working,
-then replace fakes one at a time — each replacement a small verifiable
-change instead of a big-bang integration.
+**Narrow and real, not wide and fake.** The slice handles fewer cases, not
+pretend data. One real input, real code at every stage, one real output —
+then widen to the next case. A pipeline running end to end on stubbed
+responses and sample rows proves the wiring and nothing else: every stage
+still meets reality later, all at once, which is exactly what slicing is
+supposed to prevent.
+
+**Fake only what isn't available yet.** An export that hasn't arrived, an
+API that costs money per call, a service that needs credentials I don't
+have — those get stubbed, because the alternative is stopping. Everything
+else gets built real from the first slice. When something is faked, the
+plan says which task makes it real, and that task comes early.
 
 **One unknown at a time.** A new API and a new library and a new pattern
 in one slice is how one-shots fail. Sequence them. If a slice has two

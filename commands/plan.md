@@ -29,11 +29,23 @@ Write PLAN.md containing:
    `make check` existing and being fast; skipping it leaves nothing scoped to
    check against until the whole build is done.
 3. Then the ordered task list, each task small enough to complete and verify
-   independently. Sequence it so something runs end to end as early as
-   possible, with the hard parts faked — a stubbed API response, three rows of
-   sample data — rather than building each layer fully in dependency order.
-   Replacing a fake is a small verifiable change; discovering at task 30 that
-   nothing has ever run together is not.
+   independently. **Sequence it so one real path runs end to end as early as
+   possible** — narrow, not faked. Pick the single simplest case the app exists
+   to handle, and make every stage of it real for that one case, even if it
+   handles that case badly. One real input, through real code at every step, to
+   one real output. Then widen.
+
+   Narrow means *fewer cases*, not *pretend data*. A pipeline that runs end to
+   end on stubbed responses and sample rows proves the wiring and nothing else
+   — every stage still gets its first contact with reality later, all at once,
+   which is the failure this ordering exists to prevent. Fake a stage only when
+   the real thing is genuinely unavailable at that point in the build — an
+   export that hasn't arrived, an API that costs money per call — and when you
+   do, say in the task which stage is faked and which task makes it real.
+
+   Do not build each layer fully in dependency order — all the models, then all
+   the services, then all the routes. Discovering at task 30 that nothing has
+   ever run together is the outcome that ordering produces.
 4. The exact files each task creates or modifies
 5. Which FR from SPEC.md each task satisfies
 6. The dependencies you'll install and why each is needed
