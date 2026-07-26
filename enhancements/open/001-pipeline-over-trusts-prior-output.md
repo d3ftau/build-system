@@ -1,5 +1,11 @@
 # Enhancement: the pipeline over-trusts its own earlier output
 
+**Status: OPEN** — not implemented. Verified 2026-07-26: `commands/audit.md` is
+unchanged since the initial commit (`333c972`) and still carries the
+traceability-as-correctness instruction this file flags. `[STATED]` in
+`commands/contract.md` has not been split. See "Implementation status" at the
+end for what landed nearby and why it doesn't cover this.
+
 ## Where this came from
 
 Session on `task-extractor` (personal decision-mining tool). Ran the full
@@ -128,6 +134,33 @@ be useful raw material for that session, not proposals:
 - Any fix probably needs to survive being applied by a fresh session with no
   memory of this incident — i.e., it needs to change what the skill actually
   asks for, not just be a lesson Greg or I personally remember.
+
+## Implementation status (checked 2026-07-26)
+
+**Not implemented.** Nothing in this file's problem statement has been fixed.
+Evidence:
+
+- `commands/audit.md` has not been touched since the initial commit
+  (`333c972`). Item 1 still reads *"quote the exact line in SPEC.md that
+  establishes it"* — the precise traceability-as-correctness instruction this
+  file identifies as the likely place for the fix.
+- `commands/contract.md` still tags with `[STATED]` / `[DERIVED]` /
+  `[ASSUMED]` / `[BET]`. `[STATED]` has not been split, so "the user decided
+  this" and "an earlier document asserted this" remain indistinguishable.
+
+**What landed nearby, and why it doesn't count.** Commits `d1511c6` and
+`f0a0b3f` added `/explore` and the `[BET]` tag, prompted by the ClickUp
+nag-capability error. But that error is this file's *contrast case* (Example
+2) — the one that **did not** exhibit the failure mode, and self-corrected in a
+single turn precisely because it was an externally checkable fact.
+`/explore`'s whole design is to hand checkable external claims to a human with
+a link. The unfixed core here is Example 1: a claim about **model judgment**
+("endorsement is carried by a verbatim span"), which is not externally
+checkable and which `/explore` would pass without comment.
+
+So the system now has a checker for "is this fact about the world true" and
+still has none for "is this internal judgment call actually sound." See `003`,
+which finds a third provenance class the same tagging scheme misses.
 
 ## Where this lives for now
 

@@ -1,5 +1,9 @@
 # Enhancement: principles in PLAYBOOK.md prose don't reach the commands
 
+**Status: PARTIAL** — the vertical-slice fix landed in `commands/plan.md`
+(`165da12`). Three items remain open; see "Still open" at the end. Stays in
+`open/` until those close.
+
 ## Where this came from
 
 Session on `build-system`, 2026-07-26, reviewing the `PLAN.md` that `/plan`
