@@ -37,8 +37,35 @@ subsystem to work around a limitation that was never real.
 
 Then stop and wait. I'll go look and report back.
 
-When I do, write EXPLORE.md: each claim, what I found, and a verdict —
-**CONFIRMED**, **WRONG** (with what's actually true), or **UNRESOLVED**.
-Anything left UNRESOLVED is a bet, and must say what it costs if it's wrong.
-/contract and /plan both read this file. A bet that survives into the build
-gets resolved first, before anything that assumes its answer.
+When I do, write EXPLORE.md. Each claim gets one of four verdicts:
+
+- **CONFIRMED** — checked against the real thing. Say what was actually looked
+  at.
+- **WRONG** — checked, and false. Record what's actually true; the spec gets
+  written against that.
+- **BLOCKED** — not checked yet, but checkable. The check is now the next
+  action, and nothing that assumes the answer gets built until it lands. If
+  the check is slow to come back (a scheduled export, a delivery window),
+  start it immediately and work on something independent meanwhile — never
+  proceed on the assumption to fill the time.
+- **BET** — genuinely cannot be settled without building something. Must state
+  what it costs if it's wrong.
+
+**Something is only a BET if checking it is impossible, not inconvenient.**
+Slow, fiddly, needs-an-account, needs-me-to-click-through-a-signup — all still
+BLOCKED. If you find yourself writing a justification for why a checkable
+thing can be assumed instead, that justification is the error; delete it and
+mark it BLOCKED.
+
+For each BET, say plainly which it is:
+
+- Wrong is survivable — the build adjusts, nothing already written gets
+  thrown away. Proceed, and note it.
+- Wrong invalidates the build — then the smallest possible thing that tests
+  it gets built first, everything around it faked, before any real work
+  depends on it. Never "build it and find out at the end."
+- Wrong kills the build and can't be tested cheaply — say so directly. That's
+  a fact about the project, not a task to sequence, and I need to decide
+  whether it's worth starting at all.
+
+/contract and /plan both read this file.

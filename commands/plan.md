@@ -2,13 +2,20 @@ Read CLAUDE.md, SPEC.md, and EXPLORE.md (if it exists) in full. Inspect the
 current directory.
 
 Write PLAN.md containing:
-1. **Unresolved bets — as the first numbered tasks, not a note.** Every claim
-   this build still rests on that is UNRESOLVED in EXPLORE.md, or tagged [BET]
-   or [ASSUMED] in SPEC.md, where being wrong would invalidate work rather than
-   just adjust it. Each becomes a task at the top of the list, ahead of
-   everything that assumes its answer — including the scaffold. Most cost
-   minutes and no code: request the export, open the file, check the feature
-   page.
+1. **Open questions — as the first numbered tasks, not a note.** Anything
+   BLOCKED in EXPLORE.md, or tagged [BET] or [ASSUMED] in SPEC.md, where being
+   wrong would invalidate work rather than just adjust it.
+
+   - **BLOCKED items come first, always.** These are checkable and unchecked —
+     mostly minutes and no code: request the export, open the file, read the
+     feature page. Nothing that assumes the answer gets planned after them; it
+     gets planned *behind* them.
+   - **A BET that would invalidate the build gets proved by the smallest
+     possible slice of real code**, with everything around it faked — before
+     any work depends on it being true. If the answer only shows up once real
+     data flows end to end, then a thin end-to-end path is the first thing
+     built, not the last. Never sequence a build so an invalidating answer
+     arrives at task 40.
 
    If this produces a build order that looks wrong to you, order it this way
    regardless and say why you disagree. A recommendation to do something early,

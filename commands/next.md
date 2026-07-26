@@ -12,9 +12,10 @@ Check for these files, in the order the playbook defines:
 - BRIEF.md exists, no DESIGN.md → Phase 1.5, run /design.
 - DESIGN.md exists, no EXPLORE.md → Phase 1.75, run /explore. The external
   claims the design rests on haven't been checked against the real thing yet.
-- EXPLORE.md exists, no SPEC.md → Phase 2, run /contract. If EXPLORE.md still
-  lists anything UNRESOLVED, name those — they're bets, and /plan has to order
-  them ahead of everything that assumes them.
+- EXPLORE.md exists, no SPEC.md → Phase 2, run /contract — but first check for
+  anything still marked BLOCKED. If there is, say so and stop: those are
+  checkable-but-unchecked, and /contract won't spec around them. Name the
+  outstanding checks as the actual next action instead.
 - SPEC.md exists and contains any [ASSUMED] tag → Phase 2.5 Audit isn't
   resolved yet. Say explicitly: run /audit in a **brand-new `claude`
   session** in this directory — never continue the current session for

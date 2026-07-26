@@ -192,10 +192,22 @@ the specific link or action. It does not answer them itself. Model recall on
 product features is stale, and marketing pages don't describe free tiers
 honestly; ten minutes of clicking beats both.
 
-Findings go in `EXPLORE.md`, each **CONFIRMED**, **WRONG** (with what's
-actually true), or **UNRESOLVED**. Unresolved items are bets: `/contract` tags
-every requirement resting on one `[BET]`, and `/plan` orders resolving them
-ahead of anything that assumes them.
+Findings go in `EXPLORE.md`: **CONFIRMED**, **WRONG** (with what's actually
+true), **BLOCKED** (checkable, not yet checked), or **BET** (genuinely
+unknowable without building).
+
+The line between the last two is the one that matters. Something is only a bet
+if checking is *impossible*, not if it's slow or fiddly — needing an account,
+a signup, or a week for an export to arrive all leave it BLOCKED. `/contract`
+refuses to write a spec while anything is BLOCKED, rather than speccing around
+a guess. Genuine bets get built against only after saying what being wrong
+costs, and any bet that would invalidate the build has to be proved by the
+smallest possible slice of real code first, everything else faked — never
+discovered at the end of a plan.
+
+Most things that feel like bets are just unchecked. Of five open questions in
+the first real project through this playbook, four were answerable inside a
+week and only one needed the build to exist.
 
 The failure this exists to prevent: asserting that a whole product category
 can't do something, when it's a standard feature. That doesn't just pick the
