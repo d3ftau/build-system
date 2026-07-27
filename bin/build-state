@@ -1,0 +1,304 @@
+#!/usr/bin/env python3
+"""build-state — where a project has got to, and what runs next.
+
+Every branch here is a function of files on disk. There is nothing fuzzy in
+this decision, so there is no model in it.
+"""
+
+from __future__ import annotations
+
+import re
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+
+# Artifacts in pipeline order. Used to find the furthest one reached.
+PIPELINE = ["BRIEF.md", "EXPLORE.md", "DESIGN.md", "SPEC.md", "PLAN.md"]
+
+CHECKBOX = re.compile(r"^\s*[-*]\s*\[([ xX])\]\s*(.+?)\s*$", re.MULTILINE)
+
+
+class Style:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def _wrap(self, code: str, text: str) -> str:
+        return f"\033[{code}m{text}\033[0m" if self.enabled else text
+
+    def bold(self, text: str) -> str:
+        return self._wrap("1", text)
+
+    def dim(self, text: str) -> str:
+        return self._wrap("2", text)
+
+
+@dataclass
+class Report:
+    headline: str
+    detail: list[str] = field(default_factory=list)
+    command: str | None = None
+    command_note: str | None = None
+    warnings: list[str] = field(default_factory=list)
+
+
+def read(root: Path, name: str) -> str | None:
+    path = root / name
+    try:
+        return path.read_text(encoding="utf-8")
+    except (FileNotFoundError, NotADirectoryError):
+        return None
+
+
+def blocked_items(explore: str) -> list[str]:
+    """Lines in EXPLORE.md still carrying a BLOCKED verdict."""
+    items = []
+    for line in explore.splitlines():
+        if "BLOCKED" not in line:
+            continue
+        # Skip the command's own explanation of what BLOCKED means.
+        cleaned = re.sub(r"[*_`#]", "", line).strip().lstrip("-").strip()
+        if cleaned.upper().startswith("BLOCKED"):
+            items.append(cleaned)
+    return items
+
+
+def plan_progress(plan: str) -> tuple[int, int, str | None]:
+    boxes = CHECKBOX.findall(plan)
+    done = sum(1 for mark, _ in boxes if mark.lower() == "x")
+    nxt = next((title for mark, title in boxes if mark == " "), None)
+    return done, len(boxes), nxt
+
+
+def scaffold_present(root: Path) -> bool:
+    return (root / "Makefile").exists() or (root / "src").is_dir()
+
+
+def git_state(root: Path, name: str) -> str | None:
+    """Return a warning if the artifact is uncommitted, else None."""
+    def git(*argv: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["git", *argv], cwd=root, capture_output=True, text=True, timeout=5
+        )
+
+    try:
+        inside = git("rev-parse", "--is-inside-work-tree")
+        if inside.returncode != 0:
+            return None  # not a git repo; nothing to say
+        # Fails with no commits yet, which still means "never committed".
+        tracked = git("log", "-1", "--format=%h", "--", name)
+        dirty = git("status", "--porcelain", "--", name)
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+    if not tracked.stdout.strip():
+        return f"{name} has never been committed. Commit it before moving on."
+    if dirty.stdout.strip():
+        return f"{name} has uncommitted changes. Commit them before moving on."
+    return None
+
+
+def furthest_artifact(root: Path) -> str | None:
+    return next((n for n in reversed(PIPELINE) if (root / n).exists()), None)
+
+
+def agreed_warning(spec: str) -> str | None:
+    agreed = spec.count("[AGREED]")
+    stated = spec.count("[STATED]")
+    if not agreed:
+        return None
+    line = (
+        f"SPEC.md carries {agreed} [AGREED] requirement"
+        f"{'s' if agreed != 1 else ''} against {stated} [STATED]."
+    )
+    if agreed > stated:
+        line += (
+            " More was proposed to you than you asked for — that's the"
+            " cheapest scope to be wrong about."
+        )
+    else:
+        line += " Those are the first things to cut if this comes back too big."
+    return line
+
+
+def assess(root: Path) -> Report:
+    if (root / "PLAYBOOK.md").exists() and (root / "commands").is_dir():
+        return Report(
+            headline="This is the build-system repo itself, not a project.",
+            detail=["Run this from a project directory under ~/projects/ instead."],
+        )
+
+    brief = read(root, "BRIEF.md")
+    if brief is None:
+        return Report(
+            headline="Nothing started here yet.",
+            detail=[
+                "There's no BRIEF.md, so the pipeline hasn't begun.",
+                "If the idea is still half-formed, talk it through first."
+                " If you can already describe 'done' in one sentence, go"
+                " straight to the brief.",
+            ],
+            command="/discovery   — or /brief if 'done' is already clear",
+        )
+
+    explore = read(root, "EXPLORE.md")
+    if explore is None:
+        return Report(
+            headline="The brief is written, but nothing has been checked against reality.",
+            detail=[
+                "What the candidate tools actually do hasn't been established,"
+                " and design shouldn't start without it — that's how an option"
+                " gets ruled out for a reason that stopped being true.",
+            ],
+            command="/explore",
+        )
+
+    blocked = blocked_items(explore)
+    design = read(root, "DESIGN.md")
+    spec = read(root, "SPEC.md")
+
+    # A blocker halts everything downstream, however far along the build is.
+    if blocked:
+        return Report(
+            headline=f"Blocked. {len(blocked)} open item{'s' if len(blocked) != 1 else ''} in EXPLORE.md.",
+            detail=[
+                "These are checkable and unchecked. Nothing downstream should"
+                " proceed on a guess about them:",
+                "\n".join(f"  · {item}" for item in blocked),
+            ],
+            command_note=(
+                "Clear each one — either find the answer, or cut what depends"
+                " on it and say what was cut."
+            ),
+        )
+
+    if design is None:
+        return Report(
+            headline="Exploration is done and clear. Time to pick a shape.",
+            detail=["EXPLORE.md has no open blockers, so design can start from what's actually true."],
+            command="/design",
+        )
+
+    if spec is None:
+        return Report(
+            headline="A design is chosen. Next is the contract.",
+            detail=["This writes CLAUDE.md and SPEC.md — requirements and verification gates, no code."],
+            command="/contract",
+        )
+
+    warnings = [w for w in [agreed_warning(spec)] if w]
+
+    assumed = spec.count("[ASSUMED]")
+    if assumed:
+        return Report(
+            headline=f"The spec has {assumed} unresolved [ASSUMED] tag{'s' if assumed != 1 else ''}.",
+            detail=[
+                "Each one is a gap a model filled and you never ruled on."
+                " None should reach the plan.",
+            ],
+            command="/audit",
+            command_note=(
+                "Run this in a brand-new `claude` session in this directory,"
+                " never the current one — continuing defeats the fresh-eyes read."
+            ),
+            warnings=warnings,
+        )
+
+    plan = read(root, "PLAN.md")
+    if plan is None:
+        return Report(
+            headline="The spec is audited and clean. Ready to plan.",
+            command="/plan",
+            command_note="Restart with `claude --permission-mode plan` first — not just /plan in this session.",
+            warnings=warnings,
+        )
+
+    done, total, next_task = plan_progress(plan)
+    compose = (root / "docker-compose.yml").exists()
+
+    if not scaffold_present(root):
+        return Report(
+            headline="The plan is written, but there's no scaffold yet.",
+            detail=[
+                "Directory structure, dependencies, a Makefile with a check"
+                " target, and one failing placeholder test — verified running"
+                " and committed before any business logic.",
+            ],
+            command_note="Scaffold first, then the first /slice.",
+            warnings=warnings,
+        )
+
+    if total and done < total:
+        detail = [f"{done} of {total} tasks done in PLAN.md."]
+        if next_task:
+            detail.append(f"Next up: {next_task}")
+        return Report(
+            headline="You're in the build loop.",
+            detail=detail,
+            command="/slice",
+            warnings=warnings,
+        )
+
+    if not compose:
+        return Report(
+            headline="Every task in the plan is ticked. Nothing is deployed yet.",
+            command="/deploy",
+            warnings=warnings,
+        )
+
+    return Report(
+        headline="This is built and deployed. No commands left to run.",
+        detail=[
+            "What's left is operating it: a README in three sentences, backups"
+            " for anything that can't be regenerated, and a kill date if it"
+            " goes unused.",
+        ],
+        warnings=warnings,
+    )
+
+
+def render(report: Report, root: Path, style: Style) -> None:
+    out = sys.stdout.write
+    out("\n" + style.bold(report.headline) + "\n")
+
+    for line in report.detail:
+        out("\n" + line + "\n")
+
+    if report.command:
+        out("\n    " + style.bold(report.command) + "\n")
+    if report.command_note:
+        out("\n" + report.command_note + "\n")
+
+    artifact = furthest_artifact(root)
+    warnings = list(report.warnings)
+    if artifact:
+        git_warning = git_state(root, artifact)
+        if git_warning:
+            warnings.append(git_warning)
+
+    for warning in warnings:
+        out("\n" + style.dim("— " + warning) + "\n")
+
+    out("\n")
+
+
+def main() -> int:
+    args = sys.argv[1:]
+    if args and args[0] in {"-h", "--help"}:
+        print(__doc__.strip())
+        print("\nusage: build-state [status] [path]")
+        return 0
+    if args and args[0] == "status":
+        args = args[1:]
+
+    root = Path(args[0]).resolve() if args else Path.cwd()
+    if not root.is_dir():
+        print(f"build-state: {root} is not a directory", file=sys.stderr)
+        return 1
+
+    render(assess(root), root, Style(sys.stdout.isatty()))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
