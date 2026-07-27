@@ -1,7 +1,7 @@
 # Build Playbook — idea to working app
 
 A spec-driven workflow for taking an idea from a half-formed thought to a
-running, deployed app on `devbox`. Ten slash commands in `./commands/` are
+running, deployed app on `devbox`. Eleven slash commands in `./commands/` are
 the executable steps behind each phase below — this document explains what
 they're for and how to sequence them; the commands themselves are the source
 of truth for exact wording.
@@ -34,7 +34,7 @@ fire on a lifecycle event and cannot be talked out of running.
 Use `CLAUDE.md` for conventions and preferences. Use hooks for anything
 that must actually hold — typechecks, tests, lint, secret scanning.
 
-Three generic hooks live in `hooks/` in this repo, symlinked to
+Four generic hooks live in `hooks/` in this repo, symlinked to
 `~/.claude/hooks` and wired into `~/.claude/settings.json` so they apply to
 every project on this machine, not just one:
 
@@ -46,6 +46,9 @@ every project on this machine, not just one:
   test file that introduces a skip/xfail/disable marker (pytest, Jest/Mocha,
   JUnit, xUnit, Rust, etc.), enforcing the gate-gaming guard below at the
   moment the edit happens, not after the fact.
+- `llm-call-guard.sh` (`PostToolUse`, `Edit|Write`) — blocks an edit that
+  introduces a new model API call in a source file unless a comment names
+  the fuzzy judgment it requires. Never use an LLM for work code can do.
 - `verify-before-stop.sh` (`Stop`) — if the project has a `Makefile` with a
   `check` target, runs `make check` before the turn is allowed to end and
   blocks with the real failure output if it doesn't pass. No-ops for
@@ -151,50 +154,20 @@ If the brief can't fit in a paragraph, the scope is wrong. Cut it.
 
 ---
 
-## Phase 1.5 — Design
-
-**Command:** `/design`
-
-Reads `BRIEF.md` and identifies the genuinely distinct ways this could be
-built — not variations on one idea, different shapes with different
-centres of gravity. However many actually exist: two, five, or honestly
-just one, with an explanation of why the obvious alternatives don't hold
-up. No padding a list to make it look fuller.
-
-For each option: what it fundamentally is, what it makes easy or hard or
-forecloses, what it'd be good at in a year that the others wouldn't, and
-roughly how much work v1 is. It recommends one and says what would change
-its mind.
-
-I pick one option or a hybrid. `DESIGN.md` records all the options
-considered, what was picked, and why — including what was rejected and
-why. That record is what stops me re-litigating the same decision in three
-months when I'm tempted to rebuild.
-
-**Commit:** `DESIGN.md` once the choice is recorded.
-
----
-
-## Phase 1.75 — Explore
+## Phase 1.5 — Explore
 
 **Command:** `/explore`
 
 Everything up to here is talking and writing. This is the first step that
-touches the real world, and it comes before the spec on purpose: a data model
-written against an imagined export shape is a guess with 45 requirements
-resting on it.
+touches the real world, and it comes before design on purpose: choosing
+between shapes on stale product knowledge is how an option gets ruled out for
+a reason that was never true.
 
-It reads `BRIEF.md` and `DESIGN.md`, pulls out every claim about the outside
-world the build depends on — what a service can do, what its free tier
-allows, what the real data actually contains, whether an export works for my
-account — and hands each one back as something for me to go and check, with
-the specific link or action. It does not answer them itself. Model recall on
-product features is stale, and marketing pages don't describe free tiers
-honestly; ten minutes of clicking beats both.
-
-Findings go in `EXPLORE.md`: **CONFIRMED**, **WRONG** (with what's actually
-true), **BLOCKED** (checkable, not yet checked), or **BET** (genuinely
-unknowable without building).
+It reads `BRIEF.md` alone. From it, names the classes of tool that could solve
+this and the leading candidates in each, then checks what each actually does
+now — never from recall, always looked up fresh. Findings go in `EXPLORE.md`:
+**CONFIRMED**, **WRONG** (with what's actually true), **BLOCKED** (checkable,
+not yet checked), or **BET** (genuinely unknowable without building).
 
 The line between the last two is the one that matters. Something is only a bet
 if checking is *impossible*, not if it's slow or fiddly — needing an account,
@@ -214,7 +187,37 @@ can't do something, when it's a standard feature. That doesn't just pick the
 wrong option — it invents a subsystem to work around a limitation that was
 never real.
 
+It finishes with what's ruled in and out — the candidates still viable, and
+what eliminated the rest. That's `/design`'s starting position.
+
 **Commit:** `EXPLORE.md` once the findings are recorded.
+
+---
+
+## Phase 1.75 — Design
+
+**Command:** `/design`
+
+Reads `BRIEF.md` and `EXPLORE.md`, and builds its options on what `/explore`
+found rather than on recall. Identifies the genuinely distinct ways this
+could be built — not variations on one idea, different shapes with different
+centres of gravity. However many actually exist: two, five, or honestly
+just one, with an explanation of why the obvious alternatives don't hold
+up. No padding a list to make it look fuller.
+
+For each option: what it fundamentally is, what it makes easy or hard or
+forecloses, what it'd be good at in a year that the others wouldn't, and
+roughly how much work v1 is. It recommends one and says what would change
+its mind. It must not assert what a product or tier can't do beyond what
+`EXPLORE.md` established, and must mark any prediction about model judgment
+as untested rather than as a conclusion.
+
+I pick one option or a hybrid. `DESIGN.md` records all the options
+considered, what was picked, and why — including what was rejected and
+why. That record is what stops me re-litigating the same decision in three
+months when I'm tempted to rebuild.
+
+**Commit:** `DESIGN.md` once the choice is recorded.
 
 ---
 
@@ -222,9 +225,9 @@ never real.
 
 **Command:** `/contract`
 
-Reads `BRIEF.md`, `DESIGN.md` (if it exists), and `~/.claude/CLAUDE.md` for
-machine and stack defaults, then writes two files and nothing else — no
-source code, no directories, no installs.
+Reads `BRIEF.md`, `DESIGN.md`, and `EXPLORE.md` (if they exist), and
+`~/.claude/CLAUDE.md` for machine and stack defaults, then writes two files
+and nothing else — no source code, no directories, no installs.
 
 **`CLAUDE.md`** — project-specific rules only: tech stack for this project
 with exact versions where they matter, hard rules the agent must never
@@ -239,9 +242,11 @@ should be fast" is untestable, "WHEN the user types in the search box THE
 SYSTEM SHALL filter the visible list within 200ms" is testable. Every FR
 and every constraint is tagged:
 
-- `[STATED]` — I said this, verbatim or close to it
-- `[DERIVED]` — follows necessarily from something stated (chain shown)
-- `[ASSUMED]` — the agent filled a gap
+- `[STATED]` — I raised it myself, unprompted, in my own words
+- `[AGREED]` — the agent proposed it and I said yes
+- `[DERIVED]` — follows necessarily from a `[STATED]` (chain shown)
+- `[ASSUMED]` — the agent filled a gap I never ruled on
+- `[BET]` — rests on a `BET` in `EXPLORE.md`
 
 Verification gates are exact shell commands that must exit 0 — `make check`
 exits 0, `pytest` passes with no skipped tests, `curl -s localhost:PORT/health`
@@ -261,13 +266,20 @@ invented constraint feel natural. The agent reads only `SPEC.md`, as if
 seeing it for the first time, and:
 
 1. Lists every constraint it believes the system must satisfy, quoting the
-   exact line in `SPEC.md` that establishes it
-2. Separately lists anything it's inferring rather than reading directly
-   (these should already be tagged `[ASSUMED]` — it checks for any that
-   aren't)
-3. For each constraint, asks what would be built differently if it were
+   exact line in `SPEC.md` that establishes it — a quote proves the
+   requirement was written down, not that it's right
+2. Audits the tags themselves: a `[STATED]` whose only support is a document
+   rather than a person's words is mis-tagged; a `[DERIVED]` chain must
+   bottom out in a `[STATED]`; for every `[AGREED]`, would I have asked for
+   it unprompted?
+3. Flags any requirement that predicts how well a model will judge
+   something — classify text, spot intent — and asks whether it's been
+   tested against a real example or only written down
+4. For each constraint, asks what would be built differently if it were
    removed, flagging any whose removal changes nothing as possibly
    redundant or not load-bearing
+5. Reads the spec against itself, quoting any two passages that can't both
+   be true
 
 This catches two failure modes: a phantom constraint invented from a
 passing remark, and a silent choice made among several valid readings that
@@ -597,7 +609,7 @@ Caught, it removed a subsystem. Uncaught, it would have been days of work to
 rebuild something already sitting behind a checkbox in an app the build was
 already integrating with. Note the shape: the expensive error wasn't picking
 the wrong option, it was inventing work to route around a limitation that
-never existed. That's what Phase 1.75 exists to catch, and why it hands the
+never existed. That's what Phase 1.5 exists to catch, and why it hands the
 checking to a human with a link rather than answering from training data —
 the same recall that produced the claim can't be what audits it.
 
@@ -610,8 +622,8 @@ the same recall that produced the claim can't be what audits it.
 | 0 Setup (once per machine) | plugin install | Spec-driven plugin, standing rules in place |
 | 0.5 Discovery | `/discovery`, `/roadmap` | `DISCOVERY.md`, `ROADMAP.md` (optional) |
 | 1 Brief | `/brief` | `BRIEF.md` |
-| 1.5 Design | `/design` | `DESIGN.md` |
-| 1.75 Explore | `/explore` | `EXPLORE.md` — external claims checked against reality |
+| 1.5 Explore | `/explore` | `EXPLORE.md` — what the candidate tools actually do, checked against reality |
+| 1.75 Design | `/design` | `DESIGN.md` |
 | 2 Contract | `/contract` | `CLAUDE.md`, `SPEC.md` |
 | 2.5 Audit | `/audit` (fresh session) | Resolved `[ASSUMED]` tags |
 | 3 Plan | `claude --permission-mode plan`, `/plan` | `PLAN.md` |
