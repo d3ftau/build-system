@@ -1,4 +1,7 @@
-Read BRIEF.md. Don't write a spec yet.
+Read BRIEF.md and EXPLORE.md. Don't write a spec yet.
+
+EXPLORE.md already establishes what the candidate tools actually do and which
+it ruled out. Build the options on those findings, not on recall.
 
 Identify the genuinely distinct ways this could be built. Not variations on
 one idea — different shapes, with different centres of gravity. However many
@@ -21,17 +24,11 @@ only found N.
 I'll pick one or a hybrid. Then write DESIGN.md recording the options, my
 choice, and the reasoning — including what we rejected and why.
 
-Two things this file must not do, because everything downstream reads it as
-settled and nothing downstream can tell prose from evidence:
+Downstream reads this file as settled and can't tell prose from evidence, so:
 
-- **Don't assert what a product, service or tier can't do.** Write it as a
-  question for /explore instead. Ruling out an option on a capability claim
-  you haven't checked is the single most expensive error available here: it
-  doesn't just pick the wrong shape, it commits the build to replacing a
-  feature that already exists behind someone else's checkbox.
-- **Mark every prediction about how well a model will judge something** — that
-  it can spot intent, classify text, detect that a decision was made. Say
-  plainly that it's an untested prediction and not a conclusion, however
-  naturally it follows from the option you're describing. Left unmarked, it
-  reads as architecture, /contract turns it into a schema field, and by then
-  it has stopped being a guess anyone questions.
+- **Never assert what a product or tier can't do beyond what EXPLORE.md
+  found.** If an option turns on a capability EXPLORE.md doesn't cover, say so
+  and stop — that's a check to run, not a gap to fill with recall.
+- **Mark every prediction about model judgment as untested** — classifying
+  text, spotting intent, detecting a decision. Unmarked, /contract turns it
+  into a schema field and it stops being a guess anyone questions.
