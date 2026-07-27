@@ -49,6 +49,9 @@ code, do not create directories, do not install anything.
    formula, or a schema detail that belongs in Data Model, put it there instead
    and have the FR reference it rather than repeat it.
 
+   Any FR whose implementation is a model call must state what fuzzy judgment
+   requires one. If the rules can be enumerated, it's code — write that instead.
+
    ## Out of Scope (v1)
    ## Data Model
    Tables/entities, fields, actual types.

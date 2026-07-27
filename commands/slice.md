@@ -1,5 +1,9 @@
 Implement the next unstarted task from PLAN.md. Only that task. $ARGUMENTS
 
+Never implement a model call for work whose rules can be enumerated. If the
+task reads as a decision tree, write the logic. If PLAN.md specifies a model
+call for something enumerable, stop and say so rather than building it.
+
 When done:
 1. Run `make check` (if the Makefile has a `check` target yet) plus any test
    PLAN.md names for this specific task, and paste the real terminal output —

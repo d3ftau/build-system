@@ -32,3 +32,6 @@ Downstream reads this file as settled and can't tell prose from evidence, so:
 - **Mark every prediction about model judgment as untested** — classifying
   text, spotting intent, detecting a decision. Unmarked, /contract turns it
   into a schema field and it stops being a guess anyone questions.
+- **Any option using a model call must name the fuzzy judgment needing it.**
+  If the decision rules can be enumerated, that part is code. A model in the
+  design because prompting is quicker than thinking is the wrong shape.
