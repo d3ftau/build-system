@@ -28,18 +28,11 @@ documentation, the command files are the program.
 
 | # | Title | Status | Fix binds in | Verified |
 |---|---|---|---|---|
-| [001](open/001-pipeline-over-trusts-prior-output.md) | The pipeline over-trusts its own earlier output | **OPEN** | nothing yet — `commands/audit.md` untouched since `333c972` | 2026-07-26 |
+| [001](done/001-pipeline-over-trusts-prior-output.md) | The pipeline over-trusts its own earlier output | **DONE** | `contract.md`, `audit.md` (`9b0d2dd`, `d381b32`) | 2026-07-27 |
 | [002](open/002-principles-dont-reach-commands.md) | Principles in PLAYBOOK.md prose don't reach the commands | **PARTIAL** | `commands/plan.md` (`165da12`) — 3 items still open | 2026-07-26 |
-| [003](open/003-scope-only-ratchets-up.md) | Scope can grow but never shrink; agent-argued requirements recorded as the user's | **OPEN** | nothing yet | 2026-07-26 |
+| [003](done/003-scope-only-ratchets-up.md) | Scope can grow but never shrink; agent-argued requirements recorded as the user's | **DONE** | `roadmap.md`, `brief.md`, `discovery.md` (`9b0d2dd`, `d381b32`) | 2026-07-27 |
 
 ## Open items in detail
-
-**001 — over-trusting prior output.** Nothing implemented. `[STATED]` still
-conflates "the user decided this" with "an earlier document asserted this."
-`/audit` still asks for a quoted source line, which rewards traceability rather
-than correctness. `/explore` (`d1511c6`, `f0a0b3f`) landed nearby but addresses
-the externally-checkable class of claim — which is the case this file records as
-having *self-corrected fine*. The unfixed core is claims about model judgment.
 
 **002 — playbook prose doesn't bind.** The vertical-slice principle now lives in
 `commands/plan.md`. Still open:
