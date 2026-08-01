@@ -31,6 +31,8 @@ documentation, the command files are the program.
 | [001](done/001-pipeline-over-trusts-prior-output.md) | The pipeline over-trusts its own earlier output | **DONE** | `contract.md`, `audit.md` (`9b0d2dd`, `d381b32`) | 2026-07-27 |
 | [002](open/002-principles-dont-reach-commands.md) | Principles in PLAYBOOK.md prose don't reach the commands | **PARTIAL** | `commands/plan.md` (`165da12`) — 3 items still open | 2026-07-26 |
 | [003](done/003-scope-only-ratchets-up.md) | Scope can grow but never shrink; agent-argued requirements recorded as the user's | **DONE** | `roadmap.md`, `brief.md`, `discovery.md` (`9b0d2dd`, `d381b32`) | 2026-07-27 |
+| [004](open/004-no-post-build-doc-audit.md) | Nothing performs a post-build doc-reality audit; `CLAUDE.md`/`DESIGN.md` drift silently, no `README.md` ever gets written | **OPEN** | — | 2026-08-01 |
+| [005](open/005-deploy-assumes-one-project-shape.md) | `/deploy` assumes every project is a reachable web service | **OPEN** | — | 2026-08-01 |
 
 ## Open items in detail
 
