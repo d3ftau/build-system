@@ -58,6 +58,41 @@ category layer, and the Ollama access design all came from conversation and
 measurement against real data — not from executing a numbered task. All of it
 is now documented, but none of it originated inside the pipeline.
 
+**Second instance, same day, outside `/slice` entirely — worth its own bullet
+because it shows the failure isn't confined to the pipeline.** After the
+write-up above was committed, the agent wrote a new hard rule
+(build-2 `CLAUDE.md`, "ingredient resolution runs at write time, never read
+time") and immediately built against it — including a fail-closed
+recipe-eligibility exclusion for the case where an ingredient hadn't resolved
+yet. The user had already, in the same continuous conversation, dismissed
+that exact scenario as not worth engineering around ("unless someone is
+speed running the app it should never be an issue anyway"). The agent built
+it anyway, a few exchanges later, citing the hard rule it had itself written
+that morning as if it were settled external authority — not noticing the
+conversation had already moved past the premise. Caught by the user, not by
+any gate; the code had already typechecked and passed 102 tests. This did
+not happen via `/slice` — it was ordinary conversational "let's build the
+next thing" work, with no task boundary, no gate, no plan file in the loop
+at all. A fix scoped only to `commands/slice.md` or `plan.md` would not have
+prevented it.
+
+**The correction itself needed a second correction, same conversation.**
+Asked to remove the offending piece, the agent proposed three named items
+(the eligibility exclusion; the read/write split it sat inside; a
+quantity-negligibility helper the exclusion shared with an unrelated fix)
+and asked which the user meant. The user's shorthand reply named only one
+item by number and asked for two others explained "in plain English" — the
+agent executed against a plausible but wrong reading of which numbered list
+the shorthand referred to (there were two, from two different messages),
+removed only the exclusion, and left the shared helper and its second
+caller in place with documentation asserting they were being kept
+deliberately. The user had to correct a second time — "2 is fine. 3 is
+absolutely not needed" — to get the rest removed. Not a new mechanism, but
+a compounding instance of the same one: once again, no gate existed to
+check the agent's own read of an ambiguous instruction against what was
+actually meant before code (and, this time, prose *asserting the code was
+correct*) shipped.
+
 ## The general failure mode
 
 `/slice`'s contract is explicit: **"Implement the next unstarted task from
@@ -122,6 +157,16 @@ Deliberately several, none scoped to the exact symptom (README's own rule).
   same agent decides to run, on work it built, has the same self-trust problem
   the README's "common thread" names for `001`/`003`/`008`. It may need to be a
   hook, a human-invoked command, or explicitly a fresh-context session.
+- **The second instance above may be `008`'s failure mode, not `009`'s, and
+  worth re-examining once `008` gets a fix.** `009`'s core diagnosis is about
+  `/slice`'s per-task lens across a multi-task pipeline; the second instance
+  had no task, no gate, no pipeline — just an agent citing its own
+  minutes-old prose as settled authority inside one conversation, which is
+  closer to `008`'s "claims accepted on evidence that tests something
+  adjacent to the claim" and the README's "common thread" (the system trusts
+  its own prose) one level in. Left here rather than filed separately only
+  because the user's own instruction was to add it as evidence to this file;
+  whoever picks up `008` or `009` should decide whether it wants to move.
 - **What "real data" means as a gate.** The 33.6% only became visible by running
   against a real 19-recipe library and 1,740 real AUSNUT rows. A synthetic
   fixture would have shown 100%. Whether that can be required generally, or

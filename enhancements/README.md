@@ -82,7 +82,16 @@ individually-correct tasks; and the plan's own tasks 22/23 went stale
 mid-flight with nothing to notice. `/slice` verifies a task, `/audit` runs at
 the end — nothing checks a *component's output quality* in between. Pulls
 against `007` (which makes each slice heavier) and is mechanically downstream
-of `003` (if builds only grow, this worsens on its own).
+of `003` (if builds only grow, this worsens on its own). **Second instance
+added same day, outside `/slice` entirely**: the agent wrote a hard rule,
+built a mechanism citing it as authority a few exchanges later, and the user
+had already dismissed that exact scenario earlier in the same conversation —
+caught by the user, not any gate, after the code had typechecked and its
+tests passed. No task, no pipeline, no `/slice` involved, which means this
+instance may actually belong to `008` (self-trust within a session) more
+than `009` (per-task blindness across a pipeline) — flagged in `009`'s own
+"Open, not resolved here" rather than moved, since it was recorded there on
+direct instruction.
 
 ## Common thread
 
