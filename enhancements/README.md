@@ -17,81 +17,31 @@ enhancements/
 
 A file moves to `done/` only when every item in its own "Still open" or
 "Candidate fixes" section has landed **somewhere binding**. Partially-fixed
-work stays in `open/` — `002` is the current example.
+work stays in `open/`.
 
 **Binding means a command file, a hook, or a generated project `CLAUDE.md`.**
-An edit to `PLAYBOOK.md` alone does not close an enhancement. That is `002`'s
-entire thesis, and applying it to this tracker is the point: the playbook is
-documentation, the command files are the program.
+An edit to `PLAYBOOK.md` alone does not close an enhancement. The commands are
+the source of truth; the playbook explains them (`002`). The exception is
+guidance aimed at the user rather than the agent, which the playbook owns.
 
 ## Status
 
 | # | Title | Status | Fix binds in | Verified |
 |---|---|---|---|---|
 | [001](done/001-pipeline-over-trusts-prior-output.md) | The pipeline over-trusts its own earlier output | **DONE** | `contract.md`, `audit.md` (`9b0d2dd`, `d381b32`) | 2026-07-27 |
-| [002](open/002-principles-dont-reach-commands.md) | Principles in PLAYBOOK.md prose don't reach the commands | **PARTIAL** | `commands/plan.md` (`165da12`) — 3 items still open | 2026-07-26 |
+| [002](done/002-principles-dont-reach-commands.md) | Principles in PLAYBOOK.md prose don't reach the commands | **DONE** | `plan.md`, `slice.md`, `contract.md`, PLAYBOOK.md redefined as explanation (`165da12`, 2026-10-01) | 2026-10-01 |
 | [003](done/003-scope-only-ratchets-up.md) | Scope can grow but never shrink; agent-argued requirements recorded as the user's | **DONE** | `roadmap.md`, `brief.md`, `discovery.md` (`9b0d2dd`, `d381b32`) | 2026-07-27 |
-| [004](open/004-no-post-build-doc-audit.md) | Nothing performs a post-build doc-reality audit; `CLAUDE.md`/`DESIGN.md` drift silently, no `README.md` ever gets written | **OPEN** | — | 2026-08-01 |
-| [005](open/005-deploy-assumes-one-project-shape.md) | `/deploy` assumes every project is a reachable web service | **OPEN** | — | 2026-08-01 |
-| [006](open/006-pipeline-has-no-concept-of-a-human-surface.md) | The pipeline has no concept of a human surface; FRs go green with no UI and nothing ever asks what it should look like | **OPEN** | — | 2026-08-07 |
-| [007](open/007-slice-settles-open-decisions-silently.md) | `/slice` settles the plan's open decisions silently, mid-build, and surfaces them only after the code exists | **OPEN** | — | 2026-08-07 |
-| [008](open/008-claims-accepted-without-checking-they-can-be-true.md) | Claims are accepted on evidence that tests something adjacent to what the claim says | **OPEN** | — | 2026-08-07 |
-| [009](open/009-slice-is-too-small-a-unit-for-a-large-build.md) | `/slice`'s per-task lens can't see output quality, cross-task patterns, or a stale plan — and a 61-task build has no checkpoint that can | **OPEN** | — | 2026-08-19 |
+| [004](done/004-no-post-build-doc-audit.md) | Nothing performs a post-build doc-reality audit; `CLAUDE.md`/`DESIGN.md` drift silently, no `README.md` ever gets written | **DONE** | `complete.md` (new), `bin/build-state` | 2026-10-01 |
+| [005](done/005-deploy-assumes-one-project-shape.md) | `/deploy` assumes every project is a reachable web service | **DONE** | `deploy.md` | 2026-10-01 |
+| [006](done/006-pipeline-has-no-concept-of-a-human-surface.md) | The pipeline has no concept of a human surface; FRs go green with no UI and nothing ever asks what it should look like | **DONE** | `brief.md`, `design.md`, `contract.md`, `plan.md`, `checkpoint.md` | 2026-10-01 |
+| [007](done/007-slice-settles-open-decisions-silently.md) | `/slice` settles the plan's open decisions silently, mid-build, and surfaces them only after the code exists | **DONE** | `slice.md`, `plan.md`, `hooks/verify-before-stop.sh` | 2026-10-01 |
+| [008](done/008-claims-accepted-without-checking-they-can-be-true.md) | Claims are accepted on evidence that tests something adjacent to what the claim says | **DONE** | `slice.md`, `design.md`, `contract.md` (+ `~/.claude/CLAUDE.md`, outside this repo) | 2026-10-01 |
+| [009](done/009-slice-is-too-small-a-unit-for-a-large-build.md) | `/slice`'s per-task lens can't see output quality, cross-task patterns, or a stale plan — and a 61-task build has no checkpoint that can | **DONE** | `checkpoint.md` (new), `plan.md`, `slice.md`, `bin/build-state` | 2026-10-01 |
+| [010](done/010-existence-checks-skip-oss.md) | "Does this exist" checks default to commercial alternatives and skip GitHub/OSS as its own search category | **DONE** | `discovery.md`, `explore.md` | 2026-10-01 |
 
 ## Open items in detail
 
-**002 — playbook prose doesn't bind.** The vertical-slice principle now lives in
-`commands/plan.md`. Still open:
-- *"One unknown at a time"* remains orphaned — confirmed absent from `commands/`
-  and `hooks/` as of 2026-07-26; it exists only in `PLAYBOOK.md:355`.
-- `file-cleanup/PLAN.md` has not been regenerated — still 41 tasks, first
-  end-to-end run at ~31.
-- No mechanism prevents recurrence. Both fixes so far were "someone noticed and
-  edited a file."
-
-**003 — scope only ratchets up.** Nothing implemented. `/roadmap`'s test
-("would this be worth using if nothing after it got built?") can only detect a
-build that is too small, and PLAYBOOK.md:122 gives growing it as the only
-remedy. No command can make a build smaller. Separately, a requirement the agent
-argued for and the user assented to gets recorded as `[STATED]`, identical to
-one the user raised unprompted.
-
-**006 — no concept of a human surface.** Nothing implemented. Four Autopantry
-FRs had a table and an endpoint and no way for a person to enter or see
-anything, and the FR checkboxes went green anyway. Separately, no step in the
-chain has ever asked what a build should look like, so the first screen built
-becomes the design language by default. Fixes proposed at three stages
-(`/contract`, `/brief`, and a new pre-build completeness audit); none written.
-
-**007 — `/slice` decides silently.** Nothing implemented. Plan tasks ship with
-open questions attached — `/plan` says so itself, in its own "ambiguous / my
-own judgment calls" section — and the slice answers them without saying so,
-surfacing the answer only once the code exists. Three separate pieces of work
-were built and stripped in one day this way.
-
-**008 — claims tested against an adjacent proposition.** Nothing implemented.
-Least command-shaped of the three; the fix may belong in a hook or in
-`~/.claude/CLAUDE.md` rather than a command file.
-
-**009 — `/slice` is too small a unit for a large build.** Nothing implemented.
-Autopantry Build 2 is 63 FRs / 61 tasks, roughly double Build 1, and was ~20%
-through when this surfaced. A task that passed its own gate at **33.6%
-correct** stayed load-bearing for two days and several tasks before anyone
-measured it; an architectural error (resolve-at-read-time) spanned three
-individually-correct tasks; and the plan's own tasks 22/23 went stale
-mid-flight with nothing to notice. `/slice` verifies a task, `/audit` runs at
-the end — nothing checks a *component's output quality* in between. Pulls
-against `007` (which makes each slice heavier) and is mechanically downstream
-of `003` (if builds only grow, this worsens on its own). **Second instance
-added same day, outside `/slice` entirely**: the agent wrote a hard rule,
-built a mechanism citing it as authority a few exchanges later, and the user
-had already dismissed that exact scenario earlier in the same conversation —
-caught by the user, not any gate, after the code had typechecked and its
-tests passed. No task, no pipeline, no `/slice` involved, which means this
-instance may actually belong to `008` (self-trust within a session) more
-than `009` (per-task blindness across a pipeline) — flagged in `009`'s own
-"Open, not resolved here" rather than moved, since it was recorded there on
-direct instruction.
+None open as of 2026-10-01.
 
 ## Common thread
 

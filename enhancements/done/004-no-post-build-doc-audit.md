@@ -1,8 +1,6 @@
 # Enhancement: nothing performs a post-build doc-reality audit
 
-**Status: OPEN** — diagnosed, not built. Candidate fix and an unresolved
-design disagreement recorded below; leave the actual command to a dedicated
-session.
+**Status: DONE** — `/complete` exists; `build-state` routes to it.
 
 ## Where this came from
 
@@ -80,3 +78,16 @@ still open. Decide it before writing the command, not by analogy to `/audit`.
 - No mechanism prevents this recurring on the *next* build — `/complete`
   fixes it retroactively per-project, same as `002`'s "someone noticed and
   edited a file" pattern, unless it's actually run as a standing step.
+
+## Implementation status (2026-10-01)
+
+- `commands/complete.md` — new. Cross-checks every project doc against git
+  log, files on disk and running config; shows the stale list before editing;
+  writes `README.md` (what, how to run, where data lives, what to back up).
+- **Warm vs cold, decided: warm.** The user's position on record above held.
+  Context is used for *why*; every *fact* is checked against real state, never
+  recalled — that's the guard against the self-trust problem `/audit` solves
+  by going cold.
+- **Recurrence:** `bin/build-state` now reports `/complete` as the next step
+  for any deployed project with no `README.md`, so it's a standing step rather
+  than something someone has to remember.

@@ -24,6 +24,12 @@ only found N.
 I'll pick one or a hybrid. Then write DESIGN.md recording the options, my
 choice, and the reasoning — including what we rejected and why.
 
+If BRIEF.md says a person sees anything, DESIGN.md also gets a **Look and
+feel** section: what I said in the brief, plus anything I decide when you ask
+— layout, tone, colour, density, a reference app I like. Ask; don't fill it
+in. If I don't care, write that down, and say the first screen built will set
+the style and must be shown to me before a second one is built.
+
 Downstream reads this file as settled and can't tell prose from evidence, so:
 
 - **Never assert what a product or tier can't do beyond what EXPLORE.md
@@ -35,3 +41,7 @@ Downstream reads this file as settled and can't tell prose from evidence, so:
 - **Any option using a model call must name the fuzzy judgment needing it.**
   If the decision rules can be enumerated, that part is code. A model in the
   design because prompting is quicker than thinking is the wrong shape.
+- **The test cuts both ways.** Before calling something enumerable, name the
+  inputs the rules read. If one of them is the thing being worked out ("flag
+  yoghurt stored in the pantry" needs to already know yoghurt is chilled), it
+  isn't enumerable — it's the judgment wearing a rule's clothes.

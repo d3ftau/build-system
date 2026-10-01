@@ -6,6 +6,13 @@ From the brief, name the categories that could carry the job — task managers,
 note apps, schedulers, whatever fits — including ones I probably won't pick.
 Then the two or three leading candidates in each.
 
+Generate candidates with two separate searches, not one: **commercial
+products**, and **GitHub / open-source projects** (PyPI, npm, archives,
+datasets). Neither is a fallback for the other — skipping one isn't less
+thorough, it's a whole category of answer never generated. For open source,
+star count and last-commit date are the first filter. Don't inherit
+DISCOVERY.md's list as complete — it may have searched only one.
+
 ## 2. What do they actually do now?
 
 Go and look: current feature pages, API docs, pricing tiers, changelogs.

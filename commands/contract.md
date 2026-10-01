@@ -18,6 +18,8 @@ code, do not create directories, do not install anything.
    - Hard rules the agent must never break, numbered
    - Where data lives
    - What must never be installed or used
+   - That no devbox-specific path, IP or hostname is ever written into code —
+     it comes from an environment variable, so the project can move hosts
 
 2. SPEC.md — using this exact structure. Every Functional Requirement and every
    constraint carries one of these tags:
@@ -49,14 +51,29 @@ code, do not create directories, do not install anything.
    formula, or a schema detail that belongs in Data Model, put it there instead
    and have the FR reference it rather than repeat it.
 
+   **Observable by whom?** A row in a database is observable; nobody can use
+   it. Any FR where a person enters, sees, reviews, chooses or is told
+   something must name the human surface it happens on (below). An FR that is
+   only satisfiable server-side for something a person needs to do is half an
+   FR — it will go green with no way to use it.
+
    Any FR whose implementation is a model call must state what fuzzy judgment
    requires one. If the rules can be enumerated, it's code — write that instead.
+   And the inverse: an FR claiming enumerable rules must name the inputs they
+   read, none of which may be the thing being inferred.
 
    ## Out of Scope (v1)
    ## Data Model
    Tables/entities, fields, actual types.
-   ## Interfaces
-   Signatures, routes, message formats — anything crossing a boundary.
+   ## Machine Interfaces
+   Signatures, routes, message formats — anything crossing a boundary between
+   programs.
+   ## Human Surfaces
+   Every screen, form, message or notification a person uses. For each: who
+   uses it, what they do there, which FRs it serves. Every table in Data Model
+   that a person's data goes into needs a surface here that gets it in —
+   writing SQL by hand is not one. If DESIGN.md has a Look and feel section,
+   reference it. If nothing is human-facing, write "None — " and why.
    ## External Dependencies
    Note which already exist on this machine.
    ## Failure Modes
@@ -67,6 +84,7 @@ code, do not create directories, do not install anything.
 
 Add this line verbatim to CLAUDE.md: "Tests may never be skipped, xfailed, or
 deleted to make a gate pass. If a test fails, fix the code — or tell me the
-test is wrong and why. Reducing coverage to go green is a failure, not a fix."
+test is wrong and why. Reducing coverage to go green is a failure, not a fix.
+Never add to .claude/known-failing-checks — only the user does."
 
 Then stop and show me both files.

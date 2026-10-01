@@ -1,10 +1,18 @@
 # Build Playbook — idea to working app
 
 A spec-driven workflow for taking an idea from a half-formed thought to a
-running, deployed app on `devbox`. Eleven slash commands in `./commands/` are
-the executable steps behind each phase below — this document explains what
-they're for and how to sequence them; the commands themselves are the source
-of truth for exact wording.
+running, deployed app on `devbox`. Thirteen slash commands in `./commands/` are
+the executable steps behind each phase below.
+
+**The commands are the source of truth. This document explains them.** It
+says what each command is for, how to sequence them, and why they ask what
+they ask. Agents never read it — they read the command they were invoked as.
+So anything here describing what *the agent* does is only true if a command
+file or hook makes it so. If this file and a command disagree, the command
+wins and this file is stale. A new rule for the agent goes into a command
+first and gets explained here second. What this file legitimately owns on its
+own is guidance for *me*: when to use the phone, which model, when to kill a
+project.
 
 **Scope:** personal tools and proofs-of-concept, for me and occasionally my
 partner. Nothing external-facing.
@@ -13,8 +21,9 @@ partner. Nothing external-facing.
 
 ## Opening principle: Tailscale is the auth layer
 
-I never write authentication. Every app binds to the tailnet, not the LAN
-and not the internet. Anyone on the tailnet is already authenticated by
+I never write authentication. Anything another device needs to reach binds
+to the tailnet (plus localhost for same-machine callers), never the LAN and
+never the internet. Anyone on the tailnet is already authenticated by
 Tailscale; anyone not on it cannot reach the service at all. Adding my
 partner is adding a device to the tailnet, not building a login system.
 
@@ -45,14 +54,20 @@ every project on this machine, not just one:
 - `no-skipped-tests.sh` (`PostToolUse`, `Edit|Write`) — blocks an edit to a
   test file that introduces a skip/xfail/disable marker (pytest, Jest/Mocha,
   JUnit, xUnit, Rust, etc.), enforcing the gate-gaming guard below at the
-  moment the edit happens, not after the fact.
+  moment the edit happens, not after the fact. Also blocks the agent editing
+  `.claude/known-failing-checks` (see next-but-one bullet).
 - `llm-call-guard.sh` (`PostToolUse`, `Edit|Write`) — blocks an edit that
   introduces a new model API call in a source file unless a comment names
   the fuzzy judgment it requires. Never use an LLM for work code can do.
 - `verify-before-stop.sh` (`Stop`) — if the project has a `Makefile` with a
-  `check` target, runs `make check` before the turn is allowed to end and
-  blocks with the real failure output if it doesn't pass. No-ops for
-  projects without one (Phases 0–3, before a Makefile exists).
+  `check` target, `/slice` is the most recent pipeline command, and the turn
+  changed files, runs `make check` before the turn is allowed to end and
+  blocks with the real failure output if it doesn't pass. Keyed to the turn
+  that changed files rather than the turn that typed `/slice`, because
+  `/slice` stops for approval first and the code lands in the turn after.
+  Failures matching a line in the project's `.claude/known-failing-checks`
+  (the scaffold's placeholder test, say) are let through — that file is
+  mine to edit, never the agent's.
 
 **Never accept "it works" as evidence.** Demand the actual command output,
 not a summary of it. The failure mode isn't the agent lying — it's the
@@ -99,8 +114,8 @@ Done once per machine, not once per project.
   - No hardcoded paths — a devbox-specific path baked into code breaks the
     escape hatch (Phase 5) later, when it's expensive to fix.
   - Secrets live in `.env`, never committed.
-  - Every project gets an Uptime Kuma monitor before it counts as done (see
-    the Phase 5 checklist).
+  - Every service something relies on gets an Uptime Kuma monitor before it
+    counts as done (see Phase 5 — which services that is depends on shape).
 
 ---
 
@@ -113,6 +128,14 @@ Divergent on purpose: it pushes on the idea, suggests reframes, and asks
 what problem is actually underneath it, rather than narrowing toward a
 spec. Best done walking. Skip it when I can already describe "done" in one
 sentence and I'm confident it's the right thing.
+
+Early on it asks whether this already exists — searched, not recalled, and as
+two separate searches: commercial products, and GitHub/open source (judged
+first on stars and last-commit date). One search category returning nothing
+is not "this doesn't exist." If I've already named the existing thing and
+framed the idea as an improvement on it, that question is closed and the
+conversation moves to whether the improvement is worth anything to that
+product's users.
 
 One thing discovery should always surface: is this one build, or a product
 with several pieces? If it's a product, run `/roadmap` next.
@@ -142,11 +165,17 @@ further.
 
 Then up to five targeted questions, one at a time, waiting for an answer
 before asking the next — covering only what isn't already answered: what
-"done" looks like concretely, the smallest version I'd actually use, data
-and storage, edge cases and failure modes, and who else touches it. Fewer
-than five if discovery already covered some. No solutions, no code. Once it
-has what it needs, it synthesises everything into a plain markdown brief
-under 200 words, with an explicit "Out of scope" list, saved as `BRIEF.md`.
+"done" looks like concretely, data and storage, edge cases and failure modes,
+and who else touches it. Fewer than five if discovery already covered some.
+
+Two questions are always asked, however settled they look: **what's the
+smallest version I'd actually use**, and **who looks at this and what should
+using it feel like.** Nobody volunteers either — scope only grows on its way
+to the brief, and if no one asks about the experience, the first screen built
+becomes the design by default. No solutions, no code. Once it has what it
+needs, it synthesises everything into a plain markdown brief under 250 words,
+with a "Who sees it" line and an explicit "Out of scope" list, saved as
+`BRIEF.md`.
 
 If the brief can't fit in a paragraph, the scope is wrong. Cut it.
 
@@ -164,8 +193,10 @@ between shapes on stale product knowledge is how an option gets ruled out for
 a reason that was never true.
 
 It reads `BRIEF.md` alone. From it, names the classes of tool that could solve
-this and the leading candidates in each, then checks what each actually does
-now — never from recall, always looked up fresh. Findings go in `EXPLORE.md`:
+this and the leading candidates in each — found by two separate searches,
+commercial products and GitHub/open source, neither a fallback for the
+other — then checks what each actually does now — never from recall, always
+looked up fresh. Findings go in `EXPLORE.md`:
 **CONFIRMED**, **WRONG** (with what's actually true), **BLOCKED** (checkable,
 not yet checked), or **BET** (genuinely unknowable without building).
 
@@ -217,6 +248,11 @@ considered, what was picked, and why — including what was rejected and
 why. That record is what stops me re-litigating the same decision in three
 months when I'm tempted to rebuild.
 
+If a person sees anything, `DESIGN.md` also gets a **Look and feel** section
+— asked, not filled in. If I don't care, that's written down too, along with
+the rule that the first screen built sets the style and gets shown to me
+before a second one is built.
+
 **Commit:** `DESIGN.md` once the choice is recorded.
 
 ---
@@ -235,12 +271,22 @@ break, where data lives, what must never be installed or used. It also
 carries the gate-gaming guard verbatim (see above).
 
 **`SPEC.md`** — Purpose, Functional Requirements, Out of Scope, Data
-Model, Interfaces, External Dependencies, Failure Modes, Verification
-Gates. Every FR is a numbered, independently verifiable checkbox phrased as
+Model, Machine Interfaces, Human Surfaces, External Dependencies, Failure
+Modes, Verification Gates. Every FR is a numbered, independently verifiable
+checkbox phrased as
 "WHEN `<trigger>` THE SYSTEM SHALL `<observable behaviour>`" — "search
 should be fast" is untestable, "WHEN the user types in the search box THE
-SYSTEM SHALL filter the visible list within 200ms" is testable. Every FR
-and every constraint is tagged:
+SYSTEM SHALL filter the visible list within 200ms" is testable.
+
+**Observable by whom** is the question that phrasing doesn't ask on its own.
+A row in a database is observable and nobody can use it. Any FR where a
+person enters, sees, reviews or chooses something names the human surface it
+happens on, and every table a person's data goes into needs a surface that
+gets it there — hand-written SQL doesn't count. Without that section, a spec
+can describe a complete backend accurately and the FR checkboxes go green on
+a product nobody can use.
+
+Every FR and every constraint is tagged:
 
 - `[STATED]` — I raised it myself, unprompted, in my own words
 - `[AGREED]` — the agent proposed it and I said yes
@@ -302,9 +348,14 @@ Plan Mode is a permission mode where the agent cannot edit files — an
 enforced constraint, not a polite request. `/plan` reads `CLAUDE.md` and
 `SPEC.md` in full, inspects the current directory, and writes `PLAN.md`:
 an ordered task list where each task is small enough to complete and
-verify independently, the exact files each task touches, which FR each
-task satisfies, the dependencies it'll install and why, and anything in
-the spec that's ambiguous or that it would do differently.
+verify independently and carries one unknown at most, the exact files each
+task touches, which FR each task satisfies, the dependencies it'll install
+and why, and anything in the spec that's ambiguous or that it would do
+differently. Each task also names what it **leaves open** — decisions the
+plan doesn't settle that the code will have to — and, if its output has a
+measurable quality, the value that **fails** it. Tasks are grouped into
+phases, each ending in a `/checkpoint` line. A human surface table maps
+every FR and every user-data table to the task that gives a person a way in.
 
 **The order is the point, not just the contents.** `/plan` is told to
 sequence the list so one real path runs end to end as early as possible —
@@ -317,8 +368,9 @@ I review `PLAN.md` on my phone, watching for wrong technology choices,
 missing FRs, tasks that are secretly four tasks, unnecessary dependencies,
 and — before anything else — **how far down the list the first end-to-end
 run is.** If nothing runs whole until task 30, the plan is wrong regardless
-of how good the tasks are. Then the ambiguity section, the most valuable
-part: if the agent found something unclear, the spec was unclear.
+of how good the tasks are. Then the human surface table — an empty cell is a
+missing task. Then the ambiguity section and the "leaves open" lines, the most
+valuable part: if the agent found something unclear, the spec was unclear.
 
 Fixing a wrong plan costs ten seconds — edit a text file. Fixing wrong code
 costs hours. That asymmetry is the entire point of this phase.
@@ -331,7 +383,8 @@ costs hours. That asymmetry is the entire point of this phase.
 
 **Scaffold first, always.** Before any business logic: directory
 structure, dependency install, a Makefile with dev/test/check targets,
-`.env.example`, `.gitignore`, a `/health` endpoint returning 200, and one
+`.env.example`, `.gitignore`, a `/health` endpoint returning 200 if other
+devices will reach it, and one
 placeholder test that currently fails. No business logic yet. Verify it
 actually runs — `make check`, real output — and commit it before touching
 logic. This separates environment problems (dependency conflicts, port
@@ -340,10 +393,23 @@ once is where builds die.
 
 **Command (repeated):** `/slice`
 
-Implements the next unstarted task from `PLAN.md` — only that task. When
-done: run every verification gate in `SPEC.md` and paste the real terminal
-output, tick the FR checkboxes that task satisfies, show the diff, then
-stop without starting the next task. Review and commit between slices.
+Implements the next unstarted task from `PLAN.md` — only that task.
+**Before writing any code** it says which task, what will change, and every
+decision the task forces that the plan doesn't settle — then waits for my
+go-ahead. The decisions that get reversed are almost never the thing the task
+named; they're the adjacent policy, prohibition or schema nobody asked for,
+and they're one sentence to reject before the code exists and an afternoon
+after. When done: run `make check` and paste the real terminal output, tick
+the task and the FR checkboxes it satisfies, list any decision made that
+wasn't approved, show the diff, then stop without starting the next task.
+Review and commit between slices.
+
+Evidence has to test the claim itself, not something next to it. A bug is
+real only if the real upstream system can produce it — a passing repro proves
+the code allows it, nothing more. A test input that had to be invented to
+reach a branch is a finding, not a coverage task. Every state change gets
+tested in reverse. A task with a "fails if" threshold is measured on real
+data, and isn't done below it.
 
 **Vertical slices, not horizontal layers.** Build one complete path from
 input to output — even handling a single case badly — then widen it.
@@ -367,6 +433,20 @@ plan says which task makes it real, and that task comes early.
 **One unknown at a time.** A new API and a new library and a new pattern
 in one slice is how one-shots fail. Sequence them. If a slice has two
 unknowns, split it.
+
+**Command:** `/checkpoint`, run in a **fresh session**, whenever the next
+unticked line in `PLAN.md` is one.
+
+`/slice` checks a task against its own gate; `/audit` checks documents at the
+end. Neither owns the question **is what this phase built good enough to build
+the next one on?** — and in a 60-task build, a component that passed its gate
+at 33% correct can hold up everything above it for weeks. `/checkpoint` runs
+the phase's output on real data and measures it, looks for patterns several
+tasks inherited from each other without anyone deciding them, and checks
+whether the remaining tasks still rest on decisions that hold. Fresh session
+because the session that built it has inherited the very assumptions it's
+meant to question. It reports and recommends proceed, fix first, or re-plan;
+I decide.
 
 **Command:** `/stuck`
 
@@ -401,22 +481,30 @@ Opening principle) stops holding. Anything tunneled needs its own auth.
 
 **Command:** `/deploy`
 
-Creates a Dockerfile and `docker-compose.yml`: multi-stage build, minimal
-final image, port bound to the Tailscale IP only in the form
-`100.x.y.z:PORT:PORT` — **never `0.0.0.0`** — read with `tailscale ip -4`,
-persistent data on a host volume under `./data`, config via environment
-variables from `.env`, `restart: unless-stopped`, a healthcheck hitting
-`/health`, no obsolete `version:` key. Then it brings the stack up,
-confirms the healthcheck passes, and shows `docker ps` and
+First it classifies the project, because not everything is a web service:
+
+| Shape | Ports | Health |
+|---|---|---|
+| **Reached from other devices** | `127.0.0.1:PORT:PORT` and `${TAILSCALE_IP}:PORT:PORT` | healthcheck on `/health` |
+| **Local only** — only this box calls it | `127.0.0.1` only, or none (shared Docker network) | whatever the service already answers; no `/health` added just for this |
+| **Not a service** — CLI or scheduled job | none | one real run, output and exit code; for a scheduled job, where a failed run shows up |
+
+Never `0.0.0.0`. Same-machine callers use localhost; the Tailscale IP is only
+for other devices. Every shape: multi-stage build, minimal final image,
+persistent data under `./data`, config from `.env` with nothing
+devbox-specific in the compose file, no obsolete `version:` key. Then it
+brings the stack up, verifies it for its shape, and shows `docker ps` and
 `docker compose logs --tail 20`.
 
 Before calling it done:
 
 - [ ] `docker compose up -d --build` succeeds from cold
-- [ ] `docker ps` shows the tailnet IP in PORTS, not `0.0.0.0`
-- [ ] Reachable from phone over Tailscale
+- [ ] `docker ps` shows no `0.0.0.0` in PORTS
+- [ ] Reached from other devices only: reachable from phone over Tailscale,
+      Uptime Kuma monitor hitting `/health`
+- [ ] Local only: a monitor only if something I rely on would break
+      silently while it's down
 - [ ] Stack visible in Dockge
-- [ ] Uptime Kuma monitor added, hitting `/health`
 - [ ] **Reboot test** — the box (or at least the container) survives a
       restart and comes back up on its own. Wi-Fi associates slowly on
       cold boot on this machine; this is not optional.
@@ -442,8 +530,16 @@ while the project is small, not after it's grown around the assumption.
 
 ## Phase 6 — Operate
 
-Every project gets a `README.md` in three sentences: what it is, how to
-run it, where the data lives. Anything irreplaceable — state that can't be
+**Command:** `/complete`, run in the **same session** as the build.
+
+`CLAUDE.md` and `DESIGN.md` are written before the build and nothing else
+touches them, so they rot — "not yet registered" five commits after it was.
+`/complete` checks every project doc against the actual state (git log, files,
+running config), shows me what's stale, fixes it, and writes `README.md`: what
+it is, how to run it, where the data lives, what to back up. Same session,
+unlike `/audit`, because the session's memory of *why* things changed is what
+makes a doc explain instead of list — but every *fact* it writes is checked
+against the real state, never recalled. Anything irreplaceable — state that can't be
 regenerated from git plus a fresh build — gets backed up; everything else
 is disposable by design, since the whole point is `git pull && docker
 compose up` recovery.
@@ -627,11 +723,12 @@ the same recall that produced the claim can't be what audits it.
 | 2 Contract | `/contract` | `CLAUDE.md`, `SPEC.md` |
 | 2.5 Audit | `/audit` (fresh session) | Resolved `[ASSUMED]` tags |
 | 3 Plan | `claude --permission-mode plan`, `/plan` | `PLAN.md` |
-| 4 Build | scaffold, then `/slice` (repeat), `/stuck` if blocked | Working, verified, committed code |
-| 5 Deploy | `/deploy` | Running container on the tailnet |
-| 6 Operate | — | README, backups, kill criteria |
+| 4 Build | scaffold, then `/slice` (repeat), `/checkpoint` (fresh session) at each phase end, `/stuck` if blocked | Working, verified, committed code |
+| 5 Deploy | `/deploy` | Running container, bound for its shape |
+| 6 Operate | `/complete` (same session) | Docs matching reality, README, backups, kill criteria |
 
 ---
 
 This playbook is a guide, not authority. If implementation friction says a
-step is wrong, the step is wrong. Update this file.
+step is wrong, the step is wrong. Fix the command, then update this file to
+explain it.

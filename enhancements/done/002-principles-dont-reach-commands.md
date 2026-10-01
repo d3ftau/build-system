@@ -1,8 +1,7 @@
 # Enhancement: principles in PLAYBOOK.md prose don't reach the commands
 
-**Status: PARTIAL** — the vertical-slice fix landed in `commands/plan.md`
-(`165da12`). Three items remain open; see "Still open" at the end. Stays in
-`open/` until those close.
+**Status: DONE** — closed 2026-10-01 by redefining what PLAYBOOK.md is,
+not by building a checker. See "Implementation status" at the end.
 
 ## Where this came from
 
@@ -109,7 +108,10 @@ real.
 
 ## Still open
 
-- **`one unknown at a time` is still orphaned.** No command or hook carries it.
+- ~~**`one unknown at a time` is still orphaned.**~~ **Closed 2026-10-01** —
+  `commands/plan.md` (one unknown per task; split if two) and
+  `commands/slice.md` (names a second unknown and proposes a split before any
+  code).
 - **`file-cleanup/PLAN.md` has not been regenerated.** It is still the
   41-task horizontal plan with the first end-to-end run at ~31. The fixed
   `/plan` has never been run against it. Deciding whether to regenerate it or
@@ -121,3 +123,40 @@ real.
   added to PLAYBOOK.md also lands somewhere binding, and nothing would catch
   the next orphaned principle. Worth considering in the same session as
   `enhancement1.md`, since both are about the system trusting its own prose.
+
+## Implementation status (2026-10-01)
+
+**Resolved by reframe, decided by the user:** *"the commands themselves are
+the source of truth now and the Playbook just explains how they work and
+should be used."*
+
+That dissolves the recurrence problem rather than policing it. The failure
+was a rule that existed only in the playbook; under this framing there is no
+such thing — an agent-facing rule that isn't in a command was never adopted,
+and the playbook describing it is just stale. The tag-plus-script checker
+proposed earlier the same day (option A) was dropped as unnecessary.
+
+The split that makes it workable: **guidance for the agent** must bind in a
+command or hook; **guidance for the user** (phone vs desk, model choice, kill
+criteria) is the playbook's own and needs no binding.
+
+- `PLAYBOOK.md` intro — states the commands are the source of truth, the
+  playbook explains them, a disagreement means the playbook is stale, and new
+  agent rules go into a command first. Closing line now says to fix the
+  command, then the playbook.
+- **One unknown at a time** — `commands/plan.md`, `commands/slice.md`.
+- **Two orphans found while checking** (neither had been noticed by the
+  fold-in session that preceded this, which is this file's thesis in action):
+  - two failed attempts → stop and explain, `/stuck`-style —
+    `commands/slice.md`;
+  - no devbox-specific paths/IPs/hostnames in code — the project `CLAUDE.md`
+    `/contract` writes (previously only the compose file, via `/deploy`).
+- Kill criteria checked and left in the playbook alone, deliberately: it's a
+  decision for the user, not agent behaviour.
+- **`file-cleanup/PLAN.md` regeneration — closed as moot.** That build
+  finished on the old plan (README and doc sync committed 2026-08-01).
+
+**What this doesn't catch:** the playbook going stale relative to the
+commands. That now misleads a reader rather than silently dropping a rule,
+which is a much cheaper failure — and the intro tells the reader which file
+to believe.

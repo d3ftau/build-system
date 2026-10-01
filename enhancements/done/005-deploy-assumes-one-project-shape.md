@@ -1,7 +1,6 @@
 # Enhancement: `/deploy` assumes every project is a reachable web service
 
-**Status: OPEN** — diagnosed, not built. Leave the actual rewrite to a
-dedicated session.
+**Status: DONE** — `/deploy` classifies the project before writing anything.
 
 ## Where this came from
 
@@ -63,3 +62,18 @@ question, not assumed:
 - `/deploy` itself is unchanged.
 - No mechanism would catch the next project that's the wrong shape for
   `/deploy`'s current assumptions — same "someone noticed" pattern as `002`.
+
+## Implementation status (2026-10-01)
+
+- `commands/deploy.md` — rewritten around three shapes: **reached from other
+  devices**, **local only**, **not a service** (CLI / scheduled job), with a
+  stop-and-ask for anything that's none or a mix. Answers to the open
+  questions: local-only gets a healthcheck using whatever the service already
+  answers (no `/health` added for its own sake); an Uptime Kuma monitor only
+  if something relied on would break silently; a scheduled job has to say
+  where a failed run shows up.
+- **Bug found while fixing it:** the old command bound *only* to the Tailscale
+  IP, contradicting `~/.claude/CLAUDE.md`'s rule (localhost always, Tailscale
+  additionally when another device needs it). Network-reachable services now
+  bind both. Port IPs come from `.env`, not the compose file.
+- `PLAYBOOK.md` Phase 5 and the Opening principle updated to match.

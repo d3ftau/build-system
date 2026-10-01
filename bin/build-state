@@ -228,6 +228,22 @@ def assess(root: Path) -> Report:
             warnings=warnings,
         )
 
+    if next_task and next_task.lstrip("→ ").startswith("/checkpoint"):
+        return Report(
+            headline="A phase is finished. Check it before building on it.",
+            detail=[
+                f"{done} of {total} items done in PLAN.md. Every task in this"
+                " phase passed its own gate — whether its output is good"
+                " enough to build the next phase on is a different question.",
+            ],
+            command="/checkpoint",
+            command_note=(
+                "Run this in a brand-new `claude` session in this directory —"
+                " a reader who didn't build it, not the session that did."
+            ),
+            warnings=warnings,
+        )
+
     if total and done < total:
         detail = [f"{done} of {total} tasks done in PLAN.md."]
         if next_task:
@@ -246,12 +262,23 @@ def assess(root: Path) -> Report:
             warnings=warnings,
         )
 
+    if not (root / "README.md").exists():
+        return Report(
+            headline="Built and deployed, but the docs haven't been brought up to date.",
+            detail=[
+                "CLAUDE.md and DESIGN.md were written before the build and"
+                " nothing has revisited them since. There's no README.md.",
+            ],
+            command="/complete",
+            command_note="Run this in the session that did the build — its memory of why things changed is the point.",
+            warnings=warnings,
+        )
+
     return Report(
-        headline="This is built and deployed. No commands left to run.",
+        headline="This is built, deployed and documented. No commands left to run.",
         detail=[
-            "What's left is operating it: a README in three sentences, backups"
-            " for anything that can't be regenerated, and a kill date if it"
-            " goes unused.",
+            "What's left is operating it: backups for anything that can't be"
+            " regenerated, and a kill date if it goes unused.",
         ],
         warnings=warnings,
     )

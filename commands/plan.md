@@ -46,8 +46,32 @@ Write PLAN.md containing:
    Do not build each layer fully in dependency order — all the models, then all
    the services, then all the routes. Discovering at task 30 that nothing has
    ever run together is the outcome that ordering produces.
-4. The exact files each task creates or modifies
-5. Which FR from SPEC.md each task satisfies
+
+   **One unknown per task.** A new API, a new library, a new pattern — if a
+   task carries two, split it. Two unknowns in one task means a failure can't
+   be traced to either.
+
+   **Group tasks into phases**, each ending in its own checkbox line
+   `- [ ] /checkpoint — <phase name>` — a point where what's been built gets
+   judged on its real output before more is built on top. Roughly every 8–12
+   tasks, and always after anything later tasks depend on for quality. Tasks
+   are checkboxes too, so progress can be read off the file.
+4. For every task:
+   - the exact files it creates or modifies
+   - which FR from SPEC.md it satisfies
+   - **Leaves open:** each decision the task will force that neither this plan
+     nor SPEC.md settles — a policy, a schema detail, what happens in the case
+     nobody named. "None" if genuinely none. /slice shows me these before
+     writing code; anything you leave off gets decided silently.
+   - **Fails if:** for any task whose output has a measurable quality — a match
+     rate, an accuracy, a coverage — the value, measured on real data, below
+     which it isn't good enough to build on. A number in a build note with no
+     threshold is a fact nobody can fail against.
+5. **Human surface check** — a table, not prose. Every FR: which task builds
+   the part a person touches (or "server-only", and why that's enough). Every
+   table in Data Model a person's data lives in: which task gives a way to get
+   data in that isn't SQL. First run: which task gets someone from install to
+   the core loop unaided. Any empty cell is a missing task — add it.
 6. The dependencies you'll install and why each is needed
 7. Anything in the spec that's ambiguous or that you'd do differently, stated
    plainly

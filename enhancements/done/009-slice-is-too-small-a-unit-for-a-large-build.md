@@ -1,6 +1,6 @@
 # Enhancement: `/slice` is too small a unit of work for a build this size
 
-**Status: OPEN** — diagnosed, not built.
+**Status: DONE** — `/checkpoint` exists at phase boundaries; tasks carry failure thresholds.
 
 ## Where this came from
 
@@ -180,3 +180,23 @@ Deliberately several, none scoped to the exact symptom (README's own rule).
 - Recorded in Autopantry's own documents (`SPEC.md` FR-6, build-2 `CLAUDE.md`
   hard rule 12) so the specific defects are tracked there — which is a
   project-level record, not a binding fix, and will not reach any other build.
+
+## Implementation status (2026-10-01)
+
+- `commands/checkpoint.md` — new, **fresh session** (user decision
+  2026-10-01). Runs the phase's output on real data, looks for patterns tasks
+  inherited without deciding, checks whether remaining tasks are stale (the
+  re-plan trigger), re-runs the human surface table. Reports proceed / fix
+  first / re-plan.
+- `commands/plan.md` — tasks grouped into phases, each ending in a
+  `- [ ] /checkpoint — <phase>` checkbox; any task with measurable quality
+  output carries a **Fails if:** threshold on real data.
+- `commands/slice.md` — refuses to build past an unticked checkpoint; measures
+  a task's threshold before calling it done.
+- `bin/build-state` — reports `/checkpoint` (fresh session) when it's next.
+- **Tension with `007` resolved** by putting the cost in different places:
+  `007` adds a short pause per slice; `009` adds one coarse check per phase.
+  Neither enlarges the other.
+- **Second instance** (agent citing its own hard rule) — bound via `008`'s
+  `~/.claude/CLAUDE.md` line, as this file's own note suggested.
+- **Larger slices** — rejected, as the file itself argued.
