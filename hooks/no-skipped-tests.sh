@@ -6,6 +6,9 @@ input=$(cat)
 file_path=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')
 
 case "$file_path" in
+  */.claude/known-failing-checks)
+    echo "Blocked: $file_path tells verify-before-stop.sh which failures to ignore. Only the user edits it — adding to it is skipping a test by another route. Revert this edit, then fix the failure or tell the user why it should be expected." >&2
+    exit 2 ;;
   *test*|*spec*|*__tests__*) ;;
   *) exit 0 ;;
 esac
