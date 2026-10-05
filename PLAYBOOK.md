@@ -144,7 +144,9 @@ with several pieces? If it's a product, run `/roadmap` next.
 
 Reads the discovery conversation and writes `ROADMAP.md`: the spine (the
 one capability everything else hangs off), the builds in order, and why
-that order. The test applied to every build in the roadmap: **would I use
+that order. Each build is headed `### Build N — <name>`, the name being what the
+user gets in 2–5 words, not how it's built (the cclauncher dashboard shows it as the
+product's progress). The test applied to every build in the roadmap: **would I use
 this if nothing after it ever got built?** If no, that build is scoped
 wrong — not too small, too dependent on something that doesn't exist yet.
 Re-scope it or merge it forward until the answer is yes. If the idea
@@ -273,7 +275,9 @@ carries the gate-gaming guard verbatim (see above).
 **`SPEC.md`** — Purpose, Functional Requirements, Out of Scope, Data
 Model, Machine Interfaces, Human Surfaces, External Dependencies, Failure
 Modes, Verification Gates. Every FR is a numbered, independently verifiable
-checkbox phrased as
+checkbox that opens with a 2–5 word feature name
+(`**FR-3 — Recipe import from URL.**`, the cclauncher dashboard shows these as the build's
+feature list) and is phrased as
 "WHEN `<trigger>` THE SYSTEM SHALL `<observable behaviour>`" — "search
 should be fast" is untestable, "WHEN the user types in the search box THE
 SYSTEM SHALL filter the visible list within 200ms" is testable.
