@@ -161,7 +161,7 @@ def features(spec: str) -> list[dict]:
         m = FR_LINE.match(line)
         if not m or m.group(2) or "REMOVED" in line:
             continue
-        name = (m.group(4) or "").strip().rstrip(".")
+        name = _clean(m.group(4) or "").rstrip(".")
         if name.upper().startswith("WHEN"):
             name = ""
         out.append({"id": m.group(3), "name": name, "done": m.group(1).lower() == "x"})
