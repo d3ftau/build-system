@@ -7,6 +7,7 @@ this decision, so there is no model in it.
 
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 import sys
@@ -36,6 +37,7 @@ class Style:
 @dataclass
 class Report:
     headline: str
+    stage: str = ""
     detail: list[str] = field(default_factory=list)
     command: str | None = None
     command_note: str | None = None
@@ -50,24 +52,160 @@ def read(root: Path, name: str) -> str | None:
         return None
 
 
+# A BLOCKED section opens on a heading ("## BLOCKED", "### BLOCKED (…)") or a bold-only line
+# ("**BLOCKED — check before …**"). Its items are list entries ("- …", "1. …") or, under a
+# "##" heading, "###" sub-headings. Formats as found in real EXPLORE.md files, 2026-10-05.
+BLOCKED_OPEN = re.compile(r"^(#{2,4})\s+BLOCKED\b|^\*\*BLOCKED\b.*\*\*\s*$")
+SECTION_END = re.compile(r"^(#{1,4})\s|^\*\*[^*].*\*\*\s*$|^---")
+LIST_ITEM = re.compile(r"^(?:[-*]|\d+\.)\s+(.+)$")
+SECTION_CLEARED = re.compile(r"\bnone outstanding\b|\bno blocked items remain\b", re.I)
+ITEM_SETTLED = re.compile(r"\b(moot|resolved|void|deferred|not blocking|answered)\b|^~~|^none\b", re.I)
+
+
 def blocked_items(explore: str) -> list[str]:
-    """Lines in EXPLORE.md still carrying a BLOCKED verdict."""
-    items = []
-    for line in explore.splitlines():
-        if "BLOCKED" not in line:
+    """Open items in EXPLORE.md's BLOCKED section(s).
+
+    Section headings are not items. A section saying "None outstanding" or "No
+    BLOCKED items remain" has none, and an item whose own title says it is
+    moot, resolved, void, deferred or not blocking is settled, not open.
+    """
+    items: list[str] = []
+    lines = explore.splitlines()
+    i = 0
+    while i < len(lines):
+        m = BLOCKED_OPEN.match(lines[i])
+        if not m:
+            i += 1
             continue
-        # Skip the command's own explanation of what BLOCKED means.
-        cleaned = re.sub(r"[*_`#]", "", line).strip().lstrip("-").strip()
-        if cleaned.upper().startswith("BLOCKED"):
-            items.append(cleaned)
+        level = len(m.group(1)) if m.group(1) else 99
+        section: list[str] = []
+        i += 1
+        while i < len(lines):
+            line = lines[i]
+            h = re.match(r"^(#{1,4})\s+(.+)$", line)
+            if h and len(h.group(1)) > level:  # a sub-heading under "## BLOCKED" is an item
+                section.append(h.group(2))
+            elif SECTION_END.match(line):
+                break
+            elif (li := LIST_ITEM.match(line)):
+                section.append(li.group(1))
+            elif SECTION_CLEARED.search(line):
+                section = ["__cleared__"]
+            i += 1
+        if section == ["__cleared__"] or any(SECTION_CLEARED.search(s) for s in section):
+            continue
+        for raw in section:
+            text = re.sub(r"[*`]", "", raw).strip()
+            # Judge an item by its title: the bold lead if it has one, else its opening words,
+            # so a long explanation that mentions "resolved" in passing doesn't settle it.
+            bold = re.match(r"^\*\*(.+?)\*\*", raw)
+            title = bold.group(1) if bold else text[:120]
+            if text and not ITEM_SETTLED.search(title):
+                items.append(text)
     return items
 
 
+# Older plans (before /plan required checkboxes, 2026-10-01) mark tasks as headings:
+#   ### Task 4 — Schema ✅ done
+TASK_HEADING = re.compile(r"^#{2,4}\s+(Task\s+\S+?\s*[—–-].*?)\s*$")
+PHASE_HEADING = re.compile(r"^##\s+(.+?)\s*$")
+
+
+def _clean(text: str) -> str:
+    return re.sub(r"\*\*|`", "", text).strip()
+
+
+def plan_tasks(plan: str) -> list[dict]:
+    """Every task and checkpoint line in PLAN.md, in order, from either format.
+
+    Checkbox: done is the box. Heading: done is a ✅ in the heading, and the
+    words after it are the done note ("RUN, FAILED AS DESIGNED").
+    """
+    tasks: list[dict] = []
+    phase = ""
+    for line in plan.splitlines():
+        if (m := PHASE_HEADING.match(line)):
+            phase = _clean(m.group(1))
+            continue
+        if (m := CHECKBOX.match(line)):
+            title = _clean(m.group(2))
+            note = ""
+            if (n := re.search(r"\s*\*?\((.+?)\)\*?\s*$", title)):
+                note, title = n.group(1).strip("* "), title[: n.start()].strip()
+            tasks.append({"phase": phase, "title": title.rstrip("."), "done": m.group(1).lower() == "x",
+                          "note": note, "checkpoint": title.lstrip("→ ").startswith("/checkpoint")})
+            continue
+        if (m := TASK_HEADING.match(line)):
+            text = _clean(m.group(1))
+            title, mark, note = text.partition("✅")
+            tasks.append({"phase": phase, "title": title.rstrip(" —–-"), "done": bool(mark),
+                          "note": note.strip(" —–-"), "checkpoint": False})
+    return tasks
+
+
 def plan_progress(plan: str) -> tuple[int, int, str | None]:
-    boxes = CHECKBOX.findall(plan)
-    done = sum(1 for mark, _ in boxes if mark.lower() == "x")
-    nxt = next((title for mark, title in boxes if mark == " "), None)
-    return done, len(boxes), nxt
+    tasks = plan_tasks(plan)
+    done = sum(1 for t in tasks if t["done"])
+    nxt = next((t["title"] for t in tasks if not t["done"]), None)
+    return done, len(tasks), nxt
+
+
+# SPEC.md requirements: "- [x] **FR-3 — Short feature name.** WHEN ..." (the name is optional;
+# older specs have only "- [x] **FR-3** — WHEN ..."). Struck-through or REMOVED ones are dropped.
+FR_LINE = re.compile(r"^\s*[-*]\s*\[([ xX])\]\s*(~~)?\s*\*\*(FR-\d+)\s*(?:[—–-]+\s*(.*?))?\*\*(.*)$")
+
+
+def features(spec: str) -> list[dict]:
+    out = []
+    for line in spec.splitlines():
+        m = FR_LINE.match(line)
+        if not m or m.group(2) or "REMOVED" in line:
+            continue
+        name = (m.group(4) or "").strip().rstrip(".")
+        if name.upper().startswith("WHEN"):
+            name = ""
+        out.append({"id": m.group(3), "name": name, "done": m.group(1).lower() == "x"})
+    return out
+
+
+# ROADMAP.md builds: "### Build 2 — The magic helper" or, inside "## Builds, in order",
+# "**2. Remaining source breadth — ...**". An optional "Feature: <short name>" line under a
+# build gives it a feature-level name.
+BUILD_HEADING = re.compile(r"^###\s+Build\s+(\d+)\s*[—–:-]+\s*(.+?)\s*$")
+BUILD_BOLD = re.compile(r"^\*\*(\d+)\.\s+(.+?)\*\*\s*$")
+FEATURE_LINE = re.compile(r"^\s*\*{0,2}Feature:\*{0,2}\s*(.+?)\s*$")
+
+
+def roadmap_builds(roadmap: str) -> list[dict]:
+    builds: list[dict] = []
+    in_builds = False
+    for line in roadmap.splitlines():
+        if line.startswith("## "):
+            in_builds = "build" in line.lower()
+        m = BUILD_HEADING.match(line) or (in_builds and BUILD_BOLD.match(line))
+        if m:
+            builds.append({"n": int(m.group(1)), "name": _clean(m.group(2)), "feature": ""})
+        elif builds and (f := FEATURE_LINE.match(line)) and not builds[-1]["feature"]:
+            builds[-1]["feature"] = _clean(f.group(1))
+    return builds
+
+
+def current_build(*docs: str | None) -> int | None:
+    """The build number named in the first line of BRIEF.md or PLAN.md ("PLAN — Build 1: ...")."""
+    for doc in docs:
+        if doc and doc.strip() and (m := re.search(r"\bBuild\s+(\d+)\b", doc.splitlines()[0])):
+            return int(m.group(1))
+    return None
+
+
+def committed(root: Path, name: str) -> bool:
+    """True once the file has at least one commit (later edits, like ticks, don't matter)."""
+    try:
+        r = subprocess.run(["git", "log", "-1", "--format=%h", "--", name], cwd=root,
+                           capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return r.returncode == 0 and bool(r.stdout.strip())
 
 
 def scaffold_present(root: Path) -> bool:
@@ -124,6 +262,7 @@ def agreed_warning(spec: str) -> str | None:
 def assess(root: Path) -> Report:
     if (root / "PLAYBOOK.md").exists() and (root / "commands").is_dir():
         return Report(
+            stage="build-system",
             headline="This is the build-system repo itself, not a project.",
             detail=["Run this from a project directory under ~/projects/ instead."],
         )
@@ -131,6 +270,7 @@ def assess(root: Path) -> Report:
     brief = read(root, "BRIEF.md")
     if brief is None:
         return Report(
+            stage="not-started",
             headline="Nothing started here yet.",
             detail=[
                 "There's no BRIEF.md, so the pipeline hasn't begun.",
@@ -144,6 +284,7 @@ def assess(root: Path) -> Report:
     explore = read(root, "EXPLORE.md")
     if explore is None:
         return Report(
+            stage="explore",
             headline="The brief is written, but nothing has been checked against reality.",
             detail=[
                 "What the candidate tools actually do hasn't been established,"
@@ -160,6 +301,7 @@ def assess(root: Path) -> Report:
     # A blocker halts everything downstream, however far along the build is.
     if blocked:
         return Report(
+            stage="blocked",
             headline=f"Blocked. {len(blocked)} open item{'s' if len(blocked) != 1 else ''} in EXPLORE.md.",
             detail=[
                 "These are checkable and unchecked. Nothing downstream should"
@@ -174,6 +316,7 @@ def assess(root: Path) -> Report:
 
     if design is None:
         return Report(
+            stage="design",
             headline="Exploration is done and clear. Time to pick a shape.",
             detail=["EXPLORE.md has no open blockers, so design can start from what's actually true."],
             command="/design",
@@ -181,6 +324,7 @@ def assess(root: Path) -> Report:
 
     if spec is None:
         return Report(
+            stage="contract",
             headline="A design is chosen. Next is the contract.",
             detail=["This writes CLAUDE.md and SPEC.md — requirements and verification gates, no code."],
             command="/contract",
@@ -191,6 +335,7 @@ def assess(root: Path) -> Report:
     assumed = spec.count("[ASSUMED]")
     if assumed:
         return Report(
+            stage="audit",
             headline=f"The spec has {assumed} unresolved [ASSUMED] tag{'s' if assumed != 1 else ''}.",
             detail=[
                 "Each one is a gap a model filled and you never ruled on."
@@ -207,6 +352,7 @@ def assess(root: Path) -> Report:
     plan = read(root, "PLAN.md")
     if plan is None:
         return Report(
+            stage="plan",
             headline="The spec is audited and clean. Ready to plan.",
             command="/plan",
             command_note="Restart with `claude --permission-mode plan` first — not just /plan in this session.",
@@ -218,6 +364,7 @@ def assess(root: Path) -> Report:
 
     if not scaffold_present(root):
         return Report(
+            stage="scaffold",
             headline="The plan is written, but there's no scaffold yet.",
             detail=[
                 "Directory structure, dependencies, a Makefile with a check"
@@ -230,6 +377,7 @@ def assess(root: Path) -> Report:
 
     if next_task and next_task.lstrip("→ ").startswith("/checkpoint"):
         return Report(
+            stage="checkpoint",
             headline="A phase is finished. Check it before building on it.",
             detail=[
                 f"{done} of {total} items done in PLAN.md. Every task in this"
@@ -249,6 +397,7 @@ def assess(root: Path) -> Report:
         if next_task:
             detail.append(f"Next up: {next_task}")
         return Report(
+            stage="build",
             headline="You're in the build loop.",
             detail=detail,
             command="/slice",
@@ -257,6 +406,7 @@ def assess(root: Path) -> Report:
 
     if not compose:
         return Report(
+            stage="deploy",
             headline="Every task in the plan is ticked. Nothing is deployed yet.",
             command="/deploy",
             warnings=warnings,
@@ -264,6 +414,7 @@ def assess(root: Path) -> Report:
 
     if not (root / "README.md").exists():
         return Report(
+            stage="complete",
             headline="Built and deployed, but the docs haven't been brought up to date.",
             detail=[
                 "CLAUDE.md and DESIGN.md were written before the build and"
@@ -275,7 +426,8 @@ def assess(root: Path) -> Report:
         )
 
     return Report(
-        headline="This is built, deployed and documented. No commands left to run.",
+        stage="done",
+            headline="This is built, deployed and documented. No commands left to run.",
         detail=[
             "What's left is operating it: backups for anything that can't be"
             " regenerated, and a kill date if it goes unused.",
@@ -309,12 +461,42 @@ def render(report: Report, root: Path, style: Style) -> None:
     out("\n")
 
 
+def facts(report: Report, root: Path) -> dict:
+    """Everything the human output says, plus the parsed docs, for other tools (the dashboard)."""
+    plan, spec, explore = read(root, "PLAN.md"), read(root, "SPEC.md"), read(root, "EXPLORE.md")
+    tasks = plan_tasks(plan) if plan else []
+    artifact = furthest_artifact(root)
+    warnings = list(report.warnings)
+    if artifact and (w := git_state(root, artifact)):
+        warnings.append(w)
+    return {
+        "stage": report.stage,
+        "headline": report.headline,
+        "detail": report.detail,
+        "command": report.command,
+        "command_note": report.command_note,
+        "warnings": warnings,
+        "docs": [n for n in ["DISCOVERY.md", "ROADMAP.md", *PIPELINE] if (root / n).exists()],
+        "plan_committed": plan is not None and committed(root, "PLAN.md"),
+        "blocked": blocked_items(explore) if explore else [],
+        "assumed": spec.count("[ASSUMED]") if spec else 0,
+        "tasks": tasks,
+        "done": sum(1 for t in tasks if t["done"]),
+        "total": len(tasks),
+        "features": features(spec) if spec else [],
+        "builds": roadmap_builds(read(root, "ROADMAP.md") or ""),
+        "current_build": current_build(read(root, "BRIEF.md"), plan),
+    }
+
+
 def main() -> int:
     args = sys.argv[1:]
     if args and args[0] in {"-h", "--help"}:
         print(__doc__.strip())
-        print("\nusage: build-state [status] [path]")
+        print("\nusage: build-state [status] [--json] [path]")
         return 0
+    as_json = "--json" in args
+    args = [a for a in args if a != "--json"]
     if args and args[0] == "status":
         args = args[1:]
 
@@ -323,7 +505,11 @@ def main() -> int:
         print(f"build-state: {root} is not a directory", file=sys.stderr)
         return 1
 
-    render(assess(root), root, Style(sys.stdout.isatty()))
+    report = assess(root)
+    if as_json:
+        print(json.dumps(facts(report, root), ensure_ascii=False))
+    else:
+        render(report, root, Style(sys.stdout.isatty()))
     return 0
 
 
