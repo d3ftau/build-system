@@ -9,6 +9,9 @@ The one capability everything else hangs off. If there isn't one, say so —
 that's a sign this is several products, not one.
 
 ## Builds, in order
+Head each build `### Build N — <name>`, the name being what the user gets in
+2–5 words ("A pantry worth querying", "The magic helper"), not how it's built
+(the project dashboard shows these names as the product's progress).
 For each: what it delivers, and "if nothing after this ever got built, would
 this still be worth using?" Any build answering no needs re-scoping or merging
 with the next.

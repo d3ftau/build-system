@@ -45,7 +45,10 @@ code, do not create directories, do not install anything.
 
    ## Functional Requirements
    Numbered FR-1, FR-2... each an unchecked markdown checkbox, each
-   independently verifiable, each tagged. Phrase them as
+   independently verifiable, each tagged. Each opens with a short feature
+   name, 2–5 words, naming what the user gets, not how it's built:
+   `- [ ] **FR-3 — Recipe import from URL.** WHEN …` (the project dashboard
+   shows these names as the build's feature list). Phrase the rest as
    "WHEN <trigger> THE SYSTEM SHALL <observable behaviour>". An FR states
    behaviour, not implementation — if it's only restating a field list, a hash
    formula, or a schema detail that belongs in Data Model, put it there instead
