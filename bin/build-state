@@ -236,6 +236,132 @@ def git_state(root: Path, name: str) -> str | None:
     return None
 
 
+def project_root(root: Path) -> Path:
+    """The git top level (a per-build docs folder like builds/build-2 belongs to its project)."""
+    try:
+        r = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=root,
+                           capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return root
+    return Path(r.stdout.strip()) if r.returncode == 0 and r.stdout.strip() else root
+
+
+COMPOSE_FILES = ["docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml"]
+UNIT_DIRS = [Path("/etc/systemd/system"), Path.home() / ".config" / "systemd" / "user"]
+PAGES_ACTIONS = re.compile(r"actions/deploy-pages@|peaceiris/actions-gh-pages@|JamesIves/github-pages-deploy-action@")
+
+
+def mentions(text: str, project: Path) -> bool:
+    """Text names a path inside the project, written absolute, %h/ (systemd), ~/ or $HOME/."""
+    home = str(Path.home())
+    rel = str(project)[len(home) + 1:] if str(project).startswith(home + "/") else None
+    forms = [str(project)] + ([f"%h/{rel}", f"~/{rel}", f"$HOME/{rel}", f"${{HOME}}/{rel}"] if rel else [])
+    return any(re.search(re.escape(f) + r"(?=[/\s'\";:]|$)", text, re.M) for f in forms)
+
+
+def deployments(project: Path) -> list[str]:
+    """Ways this project runs outside a dev session: a compose file, a systemd unit or a cron
+    line that runs something from its folder, or a workflow that publishes GitHub Pages.
+    Whether it is up right now is the dashboard's Live/Down, not this."""
+    found = [n for n in COMPOSE_FILES if (project / n).exists()][:1]
+    for d in UNIT_DIRS:
+        for unit in sorted(d.glob("*.service")) if d.is_dir() else []:
+            try:
+                if mentions(unit.read_text(encoding="utf-8", errors="replace"), project):
+                    found.append(f"systemd {unit.name}")
+            except OSError:
+                pass
+    try:
+        cron = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=5)
+        if cron.returncode == 0 and any(mentions(l, project) for l in cron.stdout.splitlines()
+                                        if l.strip() and not l.lstrip().startswith("#")):
+            found.append("cron")
+    except (OSError, subprocess.SubprocessError):
+        pass
+    for wf in sorted((project / ".github" / "workflows").glob("*.y*ml")):
+        if PAGES_ACTIONS.search(wf.read_text(encoding="utf-8", errors="replace")):
+            found.append("GitHub Pages")
+            break
+    return found
+
+
+# A project outside the pipeline (no BRIEF … PLAN) keeps its to-do list as a checklist under a
+# "## To do" heading in README.md. Same checkbox syntax as PLAN.md.
+TODO_HEADING = re.compile(r"^#{2,3}\s+to[\s-]?do\b", re.I)
+
+
+def readme_todo(readme: str) -> list[dict]:
+    items: list[dict] = []
+    inside = False
+    for line in readme.splitlines():
+        if re.match(r"^#{1,3}\s", line):
+            inside = bool(TODO_HEADING.match(line))
+            continue
+        if inside and (m := CHECKBOX.match(line)):
+            items.append({"title": _clean(m.group(2)).rstrip("."), "done": m.group(1).lower() == "x"})
+    return items
+
+
+def git_clean_and_pushed(project: Path) -> tuple[bool, str | None]:
+    """(True, None), or (False, why): uncommitted changes, unpushed commits, or no upstream."""
+    def git(*argv: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(["git", *argv], cwd=project, capture_output=True, text=True, timeout=5)
+    try:
+        if git("status", "--porcelain").stdout.strip():
+            return False, "it has uncommitted changes"
+        ahead = git("rev-list", "--count", "@{u}..HEAD")
+    except (OSError, subprocess.SubprocessError):
+        return False, "git couldn't be read"
+    if ahead.returncode != 0:
+        return False, "it isn't pushed anywhere (no upstream branch)"
+    if ahead.stdout.strip() != "0":
+        return False, f"{ahead.stdout.strip()} commit(s) aren't pushed"
+    return True, None
+
+
+def has_commits(project: Path) -> bool:
+    try:
+        r = subprocess.run(["git", "rev-parse", "--verify", "-q", "HEAD"], cwd=project,
+                           capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return r.returncode == 0
+
+
+def assess_quickie(root: Path) -> Report | None:
+    """A project that skipped the pipeline entirely. None if there's nothing here yet.
+
+    Shipped = every README to-do ticked (or no list), something deployed, git clean and
+    pushed. Each of those can come undone, and the project drops back to in progress.
+    """
+    project = project_root(root)
+    readme = read(project, "README.md")
+    if readme is None and not has_commits(project):
+        return None
+    todo = readme_todo(readme or "")
+    left = [t["title"] for t in todo if not t["done"]]
+    deployed = deployments(project)
+    clean, why = git_clean_and_pushed(project)
+    if not left and deployed and clean:
+        return Report(
+            stage="done",
+            headline="A quick project, built and running. No to-do items left.",
+            detail=[f"Runs via: {', '.join(deployed)}."],
+        )
+    detail = []
+    if todo:
+        detail.append(f"{len(todo) - len(left)} of {len(todo)} to-do items done in README.md.")
+        if left:
+            detail.append(f"Next up: {left[0]}")
+    else:
+        detail.append("No '## To do' checklist in README.md, so there's nothing to measure progress by.")
+    if not deployed:
+        detail.append("Nothing runs it outside a dev session (no compose file, systemd unit, cron line or Pages workflow).")
+    if not clean:
+        detail.append(f"Not shipped while {why}.")
+    return Report(stage="quickie", headline="A quick project, outside the build pipeline.", detail=detail)
+
+
 def furthest_artifact(root: Path) -> str | None:
     return next((n for n in reversed(PIPELINE) if (root / n).exists()), None)
 
@@ -267,8 +393,15 @@ def assess(root: Path) -> Report:
             detail=["Run this from a project directory under ~/projects/ instead."],
         )
 
+    # A step only gates when nothing after it exists. A project that went straight to a spec
+    # (or a plan) skipped the earlier steps on purpose; asking for them now would be wrong.
+    def later(*names: str) -> bool:
+        return any((root / n).exists() for n in names)
+
     brief = read(root, "BRIEF.md")
-    if brief is None:
+    if brief is None and not later("EXPLORE.md", "DESIGN.md", "SPEC.md", "PLAN.md"):
+        if not later("DISCOVERY.md", "ROADMAP.md") and (quick := assess_quickie(root)):
+            return quick
         return Report(
             stage="not-started",
             headline="Nothing started here yet.",
@@ -282,7 +415,7 @@ def assess(root: Path) -> Report:
         )
 
     explore = read(root, "EXPLORE.md")
-    if explore is None:
+    if explore is None and not later("DESIGN.md", "SPEC.md", "PLAN.md"):
         return Report(
             stage="explore",
             headline="The brief is written, but nothing has been checked against reality.",
@@ -294,7 +427,7 @@ def assess(root: Path) -> Report:
             command="/explore",
         )
 
-    blocked = blocked_items(explore)
+    blocked = blocked_items(explore) if explore else []
     design = read(root, "DESIGN.md")
     spec = read(root, "SPEC.md")
 
@@ -314,7 +447,7 @@ def assess(root: Path) -> Report:
             ),
         )
 
-    if design is None:
+    if design is None and not later("SPEC.md", "PLAN.md"):
         return Report(
             stage="design",
             headline="Exploration is done and clear. Time to pick a shape.",
@@ -322,7 +455,7 @@ def assess(root: Path) -> Report:
             command="/design",
         )
 
-    if spec is None:
+    if spec is None and not later("PLAN.md"):
         return Report(
             stage="contract",
             headline="A design is chosen. Next is the contract.",
@@ -330,10 +463,26 @@ def assess(root: Path) -> Report:
             command="/contract",
         )
 
+    spec = spec or ""
     warnings = [w for w in [agreed_warning(spec)] if w]
 
+    # Built = every SPEC requirement ticked; the plan's tasks only if the spec has none. When
+    # all FRs are ticked the plan's own ticks have lagged (it was abandoned or rescoped), and
+    # holding the project in the build loop over that would be wrong.
+    plan = read(root, "PLAN.md")
+    done, total, next_task = plan_progress(plan) if plan else (0, 0, None)
+    feats = features(spec)
+    built = all(f["done"] for f in feats) if feats else bool(total) and done == total
+    if feats and built and total and done < total:
+        warnings.append(f"Every FR in SPEC.md is ticked but PLAN.md has {total - done} unticked"
+                        " task(s). Tick or strike them so the plan matches what was built.")
+
     assumed = spec.count("[ASSUMED]")
-    if assumed:
+    if assumed and built:
+        # Too late to keep them out of the plan, but each is still a decision never made.
+        warnings.append(f"SPEC.md still has {assumed} [ASSUMED] tag{'s' if assumed != 1 else ''}"
+                        " nobody ruled on. Run /audit in a fresh session to settle them.")
+    elif assumed:
         return Report(
             stage="audit",
             headline=f"The spec has {assumed} unresolved [ASSUMED] tag{'s' if assumed != 1 else ''}.",
@@ -349,8 +498,7 @@ def assess(root: Path) -> Report:
             warnings=warnings,
         )
 
-    plan = read(root, "PLAN.md")
-    if plan is None:
+    if plan is None and not built:
         return Report(
             stage="plan",
             headline="The spec is audited and clean. Ready to plan.",
@@ -359,10 +507,10 @@ def assess(root: Path) -> Report:
             warnings=warnings,
         )
 
-    done, total, next_task = plan_progress(plan)
-    compose = (root / "docker-compose.yml").exists()
+    project = project_root(root)
+    deployed = deployments(project)
 
-    if not scaffold_present(root):
+    if not built and not scaffold_present(root) and not scaffold_present(project):
         return Report(
             stage="scaffold",
             headline="The plan is written, but there's no scaffold yet.",
@@ -375,7 +523,7 @@ def assess(root: Path) -> Report:
             warnings=warnings,
         )
 
-    if next_task and next_task.lstrip("→ ").startswith("/checkpoint"):
+    if not built and next_task and next_task.lstrip("→ ").startswith("/checkpoint"):
         return Report(
             stage="checkpoint",
             headline="A phase is finished. Check it before building on it.",
@@ -392,8 +540,10 @@ def assess(root: Path) -> Report:
             warnings=warnings,
         )
 
-    if total and done < total:
-        detail = [f"{done} of {total} tasks done in PLAN.md."]
+    if not built:
+        detail = [f"{done} of {total} tasks done in PLAN.md."] if total else []
+        if feats:
+            detail.append(f"{sum(f['done'] for f in feats)} of {len(feats)} requirements ticked in SPEC.md.")
         if next_task:
             detail.append(f"Next up: {next_task}")
         return Report(
@@ -404,15 +554,20 @@ def assess(root: Path) -> Report:
             warnings=warnings,
         )
 
-    if not compose:
+    readme = (project / "README.md").exists() or (root / "README.md").exists()
+
+    # Not everything needs deploying (a library, a CLI): a README written after the build counts
+    # as the end. Only when there's neither is /deploy the next step.
+    if not deployed and not readme:
         return Report(
             stage="deploy",
-            headline="Every task in the plan is ticked. Nothing is deployed yet.",
+            headline="Everything in the spec is built. Nothing is deployed yet.",
             command="/deploy",
+            command_note="If there's nothing to deploy, go straight to /complete.",
             warnings=warnings,
         )
 
-    if not (root / "README.md").exists():
+    if not readme:
         return Report(
             stage="complete",
             headline="Built and deployed, but the docs haven't been brought up to date.",
@@ -427,8 +582,10 @@ def assess(root: Path) -> Report:
 
     return Report(
         stage="done",
-            headline="This is built, deployed and documented. No commands left to run.",
+        headline=("This is built, deployed and documented." if deployed
+                  else "This is built and documented; nothing is deployed.") + " No commands left to run.",
         detail=[
+            *([f"Runs via: {', '.join(deployed)}."] if deployed else []),
             "What's left is operating it: backups for anything that can't be"
             " regenerated, and a kill date if it goes unused.",
         ],
@@ -469,7 +626,16 @@ def facts(report: Report, root: Path) -> dict:
     warnings = list(report.warnings)
     if artifact and (w := git_state(root, artifact)):
         warnings.append(w)
+    project = project_root(root)
+    quickie = report.stage == "quickie" or (report.stage == "done" and artifact is None)
+    present = [n for n in PIPELINE if (root / n).exists()]
     return {
+        # "quickie" = outside the pipeline: progress comes from README.md's "## To do" list.
+        "track": "quickie" if quickie else "pipeline",
+        "todo": readme_todo(read(project, "README.md") or "") if quickie else [],
+        "deployments": deployments(project),
+        # Pipeline steps passed over: an earlier doc missing while a later one exists.
+        "skipped": [n for i, n in enumerate(PIPELINE) if n not in present and any(p in present for p in PIPELINE[i + 1:])],
         "stage": report.stage,
         "headline": report.headline,
         "detail": report.detail,

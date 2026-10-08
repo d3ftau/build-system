@@ -731,6 +731,29 @@ the same recall that produced the claim can't be what audits it.
 | 5 Deploy | `/deploy` | Running container, bound for its shape |
 | 6 Operate | `/complete` (same session) | Docs matching reality, README, backups, kill criteria |
 
+### Skipped steps and quick projects
+
+Not everything goes through every phase, and `bin/build-state` doesn't insist
+that it does:
+
+- **A skipped step doesn't gate.** A missing doc only counts as the next step
+  when no later doc exists. A project that went from EXPLORE straight to SPEC is
+  judged by its SPEC and PLAN, and the gap is listed under `skipped` in `--json`.
+- **Built means every FR in SPEC.md is ticked.** PLAN.md's ticks only decide it
+  when the spec has no FRs. If the plan's ticks lag behind the spec, that's a
+  warning, not a reason to stay in the build loop. Leftover `[ASSUMED]` tags in
+  a built project are a warning too: too late to keep them out of the plan, but
+  still decisions nobody made.
+- **Deployed** is any of: a compose file; a systemd unit (system or user) that
+  runs something from the project's folder; a crontab line that does; or a
+  workflow that publishes GitHub Pages. Built plus a README is done even with
+  none of those, since not everything needs deploying.
+- **Quick projects** have no pipeline docs at all (no BRIEF … PLAN, DISCOVERY
+  or ROADMAP), just code and maybe a README. Their to-do list is a checklist
+  under `## To do` in README.md. One is **done** when every item is ticked (or
+  there's no list), it's deployed as above, and git is clean and pushed. Any of
+  those coming undone puts it back in progress.
+
 ---
 
 This playbook is a guide, not authority. If implementation friction says a
