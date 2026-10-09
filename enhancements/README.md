@@ -39,10 +39,14 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [009](done/009-slice-is-too-small-a-unit-for-a-large-build.md) | `/slice`'s per-task lens can't see output quality, cross-task patterns, or a stale plan — and a 61-task build has no checkpoint that can | **DONE** | `checkpoint.md` (new), `plan.md`, `slice.md`, `bin/build-state` | 2026-10-01 |
 | [010](done/010-existence-checks-skip-oss.md) | "Does this exist" checks default to commercial alternatives and skip GitHub/OSS as its own search category | **DONE** | `discovery.md`, `explore.md` | 2026-10-01 |
 | [011](open/011-spec-and-plan-complexity-not-proportionate.md) | Spec and plan complexity doesn't scale to the solution; every stage rewards completeness, none proportion | OPEN | `contract.md`, `plan.md`, `audit.md` (and possibly `brief.md` for a stakes line) | — |
+| [012](open/012-roadmap-has-no-trigger.md) | `/roadmap` has no real trigger; scope cut by `/brief` survives only as prose | OPEN | `brief.md`, `discovery.md`, `bin/build-state` | — |
+| [013](open/013-slice-stops-even-with-nothing-open.md) | `/slice` stops for approval even when its checkpoint says "nothing open" | OPEN | `slice.md` (revises `007`) | — |
 
 ## Open items in detail
 
 - **011** (2026-10-09, fashion-bot): a single daily clothes email came out with 23 FRs, a 13-row failure-mode matrix of invented thresholds, and a 39-task first plan with ~40 trivial "Leaves open" items. Interacts with `007`: the fix there made every decision loud, not just consequential ones.
+- **012** (2026-10-09, fashion-bot): discovery classed a five-stage sequence as "one build" before `/brief` cut it to stage 1, so `/roadmap` never ran and the deferred builds exist only in BRIEF.md's Out of scope prose.
+- **013** (2026-10-09, fashion-bot): a no-decision fixture-copy slice still stopped for approval. Revises `007`'s "always stop" to "stop only when something is open".
 
 ## Common thread
 
