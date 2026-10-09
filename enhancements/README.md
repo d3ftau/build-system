@@ -38,10 +38,11 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [008](done/008-claims-accepted-without-checking-they-can-be-true.md) | Claims are accepted on evidence that tests something adjacent to what the claim says | **DONE** | `slice.md`, `design.md`, `contract.md` (+ `~/.claude/CLAUDE.md`, outside this repo) | 2026-10-01 |
 | [009](done/009-slice-is-too-small-a-unit-for-a-large-build.md) | `/slice`'s per-task lens can't see output quality, cross-task patterns, or a stale plan — and a 61-task build has no checkpoint that can | **DONE** | `checkpoint.md` (new), `plan.md`, `slice.md`, `bin/build-state` | 2026-10-01 |
 | [010](done/010-existence-checks-skip-oss.md) | "Does this exist" checks default to commercial alternatives and skip GitHub/OSS as its own search category | **DONE** | `discovery.md`, `explore.md` | 2026-10-01 |
+| [011](open/011-spec-and-plan-complexity-not-proportionate.md) | Spec and plan complexity doesn't scale to the solution; every stage rewards completeness, none proportion | OPEN | `contract.md`, `plan.md`, `audit.md` (and possibly `brief.md` for a stakes line) | — |
 
 ## Open items in detail
 
-None open as of 2026-10-01.
+- **011** (2026-10-09, fashion-bot): a single daily clothes email came out with 23 FRs, a 13-row failure-mode matrix of invented thresholds, and a 39-task first plan with ~40 trivial "Leaves open" items. Interacts with `007`: the fix there made every decision loud, not just consequential ones.
 
 ## Common thread
 
