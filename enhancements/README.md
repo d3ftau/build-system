@@ -41,12 +41,14 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [011](open/011-spec-and-plan-complexity-not-proportionate.md) | Spec and plan complexity doesn't scale to the solution; every stage rewards completeness, none proportion | OPEN | `contract.md`, `plan.md`, `audit.md` (and possibly `brief.md` for a stakes line) | — |
 | [012](open/012-roadmap-has-no-trigger.md) | `/roadmap` has no real trigger; scope cut by `/brief` survives only as prose | OPEN | `brief.md`, `discovery.md`, `bin/build-state` | — |
 | [013](open/013-slice-stops-even-with-nothing-open.md) | `/slice` stops for approval even when its checkpoint says "nothing open" | OPEN | `slice.md` (revises `007`) | — |
+| [014](open/014-failing-placeholder-blocks-its-own-slice.md) | The required failing placeholder test blocks the slice that creates it; the allowlist that fixes it is only in PLAYBOOK prose | OPEN | `plan.md`, `slice.md` | — |
 
 ## Open items in detail
 
 - **011** (2026-10-09, fashion-bot): a single daily clothes email came out with 23 FRs, a 13-row failure-mode matrix of invented thresholds, and a 39-task first plan with ~40 trivial "Leaves open" items. Interacts with `007`: the fix there made every decision loud, not just consequential ones.
 - **012** (2026-10-09, fashion-bot): discovery classed a five-stage sequence as "one build" before `/brief` cut it to stage 1, so `/roadmap` never ran and the deferred builds exist only in BRIEF.md's Out of scope prose.
 - **013** (2026-10-09, fashion-bot): a no-decision fixture-copy slice still stopped for approval. Revises `007`'s "always stop" to "stop only when something is open".
+- **014** (2026-10-09, fashion-bot): the scaffold slice was blocked by its own mandated failing test. `.claude/known-failing-checks` is never mentioned by `/plan` or `/slice`, which is `002` again.
 
 ## Common thread
 
