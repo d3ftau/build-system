@@ -42,6 +42,7 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [012](open/012-roadmap-has-no-trigger.md) | `/roadmap` has no real trigger; scope cut by `/brief` survives only as prose | OPEN | `brief.md`, `discovery.md`, `bin/build-state` | — |
 | [013](open/013-slice-stops-even-with-nothing-open.md) | `/slice` stops for approval even when its checkpoint says "nothing open" | OPEN | `slice.md` (revises `007`) | — |
 | [014](open/014-failing-placeholder-blocks-its-own-slice.md) | The required failing placeholder test blocks the slice that creates it; the allowlist that fixes it is only in PLAYBOOK prose | OPEN | `plan.md`, `slice.md` | — |
+| [015](open/015-pipeline-built-for-the-wrong-stakes.md) | The pipeline is built for shipping to strangers and doesn't know shared infrastructure exists | OPEN | every command, `bin/build-state`, `hooks/verify-before-stop.sh`, `~/projects/platform` | — |
 
 ## Open items in detail
 
@@ -49,6 +50,7 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 - **012** (2026-10-09, fashion-bot): discovery classed a five-stage sequence as "one build" before `/brief` cut it to stage 1, so `/roadmap` never ran and the deferred builds exist only in BRIEF.md's Out of scope prose.
 - **013** (2026-10-09, fashion-bot): a no-decision fixture-copy slice still stopped for approval. Revises `007`'s "always stop" to "stop only when something is open".
 - **014** (2026-10-09, fashion-bot): the scaffold slice was blocked by its own mandated failing test. `.claude/known-failing-checks` is never mentioned by `/plan` or `/slice`, which is `002` again.
+- **015** (2026-10-11, end-to-end review): the pipeline still runs at ship-to-strangers weight, no stage asks what already runs (five apps, five schedulers), and the "doesn't break" checks live in `/deploy`, which never ran. Its fixes close `011`–`014`.
 
 ## Common thread
 
