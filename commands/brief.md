@@ -5,28 +5,52 @@ exist. If they do, this brief is for a specific build that came out of that
 thinking — don't re-ask what's already settled there. If ROADMAP.md exists,
 confirm which build in it this brief covers before going further.
 
+**The stakes are fixed; don't ask about them.** This is a personal app for me
+and maybe my immediate family. Nobody else uses it, nothing is sold, a missed
+or wrong day costs little. Scale every question to that.
+
 Then ask me targeted questions, ONE AT A TIME, waiting for my answer before
 asking the next. Cover only what isn't already answered: what "done" looks
-like concretely, data and storage, edge cases and failure modes, and who else
-touches it. Ask up to five — fewer if discovery already covered some — plus
-the two below, which are always asked.
+like concretely, what data it needs and where that comes from, and the one or
+two ways it could go wrong that I'd actually care about. Ask up to four —
+fewer if discovery already covered some — plus the two below, which are
+always asked.
 
 **One question is always asked, however settled it looks: what's the smallest
-version I'd actually use?** Never skip it because discovery or the roadmap
-answered it — those steps can only make a build bigger, so by the time scope
-reaches you it's been growing unopposed for two documents.
+version I'd actually use?** Never skip it because discovery answered it —
+scope only grows on its way here.
 
 Ask it concretely: if you got only the first stage of this and nothing
-downstream, is that worth having? Push once if the answer sounds like the whole
-pipeline. Write down what I say even where it contradicts ROADMAP.md — a brief
-that just restates the roadmap's scope didn't ask.
+downstream, is that worth having? Push once if the answer sounds like the
+whole pipeline. Write down what I say even where it contradicts ROADMAP.md.
 
 **A second question is always asked: who looks at this, and what should using
 it feel like?** Every screen, message or notification a person sees, and the
-look of it. Nobody volunteers this, and if nobody asks, the first screen built
-becomes the design by default. "Nothing — it runs unattended" is a real
-answer; write it down as one.
+look of it. If nobody asks, the first screen built becomes the design by
+default. "Nothing — it runs unattended" is a real answer; write it down as one.
 
 Do not suggest solutions or write any code. When you have what you need,
-synthesise everything into a plain markdown brief under 250 words, including
-a "Who sees it" line and an explicit "Out of scope" list. Save it as BRIEF.md.
+write BRIEF.md: plain markdown, under 250 words, with a first line naming the
+build ("# BRIEF — Build 1: <name>" when there's a roadmap), a "Who sees it"
+line, and two lists:
+
+- **Later** — things I want, just not in this build.
+- **Never** — things considered and rejected, each with a few words on why.
+
+## If Later isn't empty, the roadmap is yours too
+
+Cutting to the smallest version is what makes a project several builds, so
+the cut is where the roadmap gets written — not by a separate step nobody
+runs. Write or update ROADMAP.md, kept short:
+
+- `## What this is` — two sentences.
+- `## Builds` — one `### Build N — <name>` per build, the name being what I get
+  in 2–5 words, not how it's built (the project dashboard shows these). This
+  brief is the current build. Group the Later items into the builds after it,
+  in the order they'd be worth having, one or two lines each.
+- For each later build: would it still be worth using if nothing after it got
+  built? If not, merge it forward.
+
+Updating means keeping earlier builds' entries as they are and changing only
+what this brief moved. A roadmap with one build is fine. Don't invent builds
+for things I didn't ask for.

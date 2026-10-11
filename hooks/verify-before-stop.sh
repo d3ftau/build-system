@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 # Stop hook. Enforces PLAYBOOK.md's rule: never accept "it works" as evidence —
-# but only at the end of a /slice step, not every turn. Running the full
+# but only at the end of a /build turn, not every turn. Running the full
 # `make check` (ruff + ruff format + mypy --strict + pytest) on every single
 # turn measured at ~1.3s real time in file-cleanup — a fixed tax on every
-# response regardless of whether a slice was involved, confirmed 2026-07-31
+# response regardless of whether a build was involved, confirmed 2026-07-31
 # to be far more than intended.
 #
 # Detection, two conditions, both read from the transcript:
 #
-# 1. /slice is the most recent *pipeline* command (any file in commands/
-#    except /stuck, which happens inside a slice). Not "the latest message is
-#    /slice": /slice stops for approval before writing code, so the code is
-#    written in the turn answering my "go ahead" — a plain message.
+# 1. /build is the most recent *pipeline* command (any file in commands/
+#    except /stuck, which happens inside a build). Not "the latest message is
+#    /build": /build pauses at ⏸ STOP tasks, so code is also written in the
+#    turn answering my reply — a plain message.
 # 2. This turn — everything after the latest real user message — used a tool
 #    that can change files. Bash counts — edits made through sed would
-#    otherwise skip the gate — so an approval pause that read files through
-#    Bash pays ~1s for a check that passes on the clean tree it started from.
+#    otherwise skip the gate — so a STOP pause that read files through Bash
+#    pays ~1s for a check that passes on the clean tree it started from.
 #
 # A real user message has string content; tool results are always
 # array-typed. Slash commands embed <command-name>/x</command-name>. Both
@@ -44,7 +44,7 @@ verdict=$(jq -rs --arg cmds "$pipeline" '
   | ([ $e[] | select(.key > $turn_start and .value.type == "assistant")
        | .value.message.content[]? | select(.type == "tool_use") | .name ]
      | any(. == "Edit" or . == "Write" or . == "MultiEdit" or . == "NotebookEdit" or . == "Bash")) as $changed
-  | if $cmd == "slice" and $changed then "run" else "skip" end
+  | if $cmd == "build" and $changed then "run" else "skip" end
 ' "$transcript" 2>/dev/null)
 [ "$verdict" = "run" ] || exit 0
 

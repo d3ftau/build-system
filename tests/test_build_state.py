@@ -58,58 +58,96 @@ class Pipeline(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_skipped_design_does_not_gate(self):
-        # BRIEF and EXPLORE, then straight to SPEC and PLAN: no DESIGN.md.
+    def test_skipped_explore_does_not_gate(self):
+        # BRIEF, then straight to SPEC and PLAN: no EXPLORE.md.
         self.r.write("BRIEF.md", "# Brief\n")
-        self.r.write("EXPLORE.md", "# Explore\n")
         self.r.write("SPEC.md", SPEC.format(a="x", b=" "))
-        self.r.write("PLAN.md", "- [x] **Task 1 — a**\n- [ ] **Task 2 — b**\n")
-        self.r.write("src/main.py", "")
+        self.r.write("PLAN.md", "- [x] **T1 — a**\n- [ ] **T2 — b**\n")
         self.r.commit()
         s = self.r.state()
-        self.assertEqual(s["stage"], "build")
-        self.assertEqual(s["skipped"], ["DESIGN.md"])
-        # Reverse: add the design doc and nothing is skipped; the stage is unchanged.
-        self.r.write("DESIGN.md", "# Design\n")
+        self.assertEqual((s["stage"], s["command"]), ("build", "/build"))
+        self.assertEqual(s["skipped"], ["EXPLORE.md"])
+        # Reverse: add the explore doc and nothing is skipped; the stage is unchanged.
+        self.r.write("EXPLORE.md", "# Explore\n")
         s = self.r.state()
         self.assertEqual((s["stage"], s["skipped"]), ("build", []))
+
+    def test_old_design_doc_is_listed_but_never_a_step(self):
+        self.r.write("BRIEF.md", "# Brief\n")
+        self.r.write("EXPLORE.md", "# Explore\n")
+        self.r.commit()
+        s = self.r.state()
+        self.assertEqual((s["stage"], s["command"], s["skipped"]), ("spec", "/spec", []))
+        # A leftover DESIGN.md from the old pipeline doesn't move the stage, and shows in docs.
+        self.r.write("DESIGN.md", "# Design\n")
+        s = self.r.state()
+        self.assertEqual((s["stage"], s["skipped"]), ("spec", []))
+        self.assertIn("DESIGN.md", s["docs"])
+        # Reverse: remove it and it's gone from docs, stage unchanged.
+        (self.r.dir / "DESIGN.md").unlink()
+        s = self.r.state()
+        self.assertEqual(s["stage"], "spec")
+        self.assertNotIn("DESIGN.md", s["docs"])
+
+    def test_next_task_stop_is_flagged(self):
+        self.r.write("SPEC.md", SPEC.format(a=" ", b=" "))
+        self.r.write("PLAN.md", "- [x] **T1 — a**\n- [ ] **T2 — b.** ⏸ STOP — pick the tone\n")
+        self.r.commit()
+        self.assertIn("⏸ STOP", self.r.state()["command_note"])
+        # Reverse: tick it and the next task is an ordinary one.
+        self.r.write("PLAN.md", "- [x] **T1 — a**\n- [x] **T2 — b.** ⏸ STOP — pick the tone\n- [ ] **T3 — c**\n")
+        self.assertIsNone(self.r.state()["command_note"])
 
     def test_all_frs_ticked_is_built_even_if_plan_lags(self):
         self.r.write("BRIEF.md", "# Brief\n")
         self.r.write("EXPLORE.md", "# Explore\n")
         self.r.write("SPEC.md", SPEC.format(a="x", b="x"))
-        self.r.write("PLAN.md", "- [x] **Task 1 — a**\n- [ ] **Task 2 — b**\n")
-        self.r.write("src/main.py", "")
+        self.r.write("PLAN.md", "- [x] **T1 — a**\n- [ ] **T2 — b**\n")
         self.r.commit()
         s = self.r.state()
-        self.assertEqual(s["stage"], "deploy")  # built, no README, nothing deployed
+        self.assertEqual(s["stage"], "done")
         self.assertTrue(any("PLAN.md has 1 unticked" in w for w in s["warnings"]))
-        # A README with nothing to deploy is the end.
+        self.assertTrue(any("no README.md" in w for w in s["warnings"]))
+        # The README warning goes once there is one.
         self.r.write("README.md", "# Proj\n")
-        self.assertEqual(self.r.state()["stage"], "done")
+        s = self.r.state()
+        self.assertFalse(any("no README.md" in w for w in s["warnings"]))
         # Reverse: untick an FR and it's back in the build loop.
         self.r.write("SPEC.md", SPEC.format(a="x", b=" "))
         self.assertEqual(self.r.state()["stage"], "build")
 
-    def test_deployed_without_readme_needs_complete(self):
+    def test_built_and_deployed_is_done(self):
         self.r.write("SPEC.md", SPEC.format(a="x", b="x"))
-        self.r.write("PLAN.md", "- [x] **Task 1 — a**\n")
+        self.r.write("PLAN.md", "- [x] **T1 — a**\n")
+        self.r.write("README.md", "# Proj\n")
         self.r.write("compose.yml", "services: {}\n")
         self.r.commit()
         s = self.r.state()
-        self.assertEqual(s["stage"], "complete")
-        self.assertEqual(s["deployments"], ["compose.yml"])
+        self.assertEqual((s["stage"], s["deployments"]), ("done", ["compose.yml"]))
+        self.assertNotIn("Nothing deploys it", s["headline"])
+        # Reverse: no compose file is still done, just said.
+        (self.r.dir / "compose.yml").unlink()
+        s = self.r.state()
+        self.assertEqual(s["stage"], "done")
+        self.assertIn("Nothing deploys it", s["headline"])
 
-    def test_assumed_gates_until_built_then_warns(self):
+    def test_assumed_gates_the_plan_then_warns(self):
         self.r.write("SPEC.md", SPEC.format(a="x", b=" ") + "\n[ASSUMED] retry count\n")
-        self.r.write("PLAN.md", "- [x] **Task 1 — a**\n")
         self.r.write("README.md", "# Proj\n")
         self.r.commit()
-        self.assertEqual(self.r.state()["stage"], "audit")
+        self.assertEqual(self.r.state()["stage"], "spec")
+        # Once a plan exists the build carries on; the tag is a warning.
+        self.r.write("PLAN.md", "- [x] **T1 — a**\n- [ ] **T2 — b**\n")
+        s = self.r.state()
+        self.assertEqual(s["stage"], "build")
+        self.assertTrue(any("1 [ASSUMED] tag nobody ruled on" in w for w in s["warnings"]))
         self.r.write("SPEC.md", SPEC.format(a="x", b="x") + "\n[ASSUMED] retry count\n")
         s = self.r.state()
         self.assertEqual(s["stage"], "done")
         self.assertTrue(any("1 [ASSUMED] tag nobody ruled on" in w for w in s["warnings"]))
+        # Reverse: rule on it (tag removed) and the warning goes.
+        self.r.write("SPEC.md", SPEC.format(a="x", b="x") + "\nretry count\n")
+        self.assertFalse(any("[ASSUMED]" in w for w in self.r.state()["warnings"]))
 
 
 class Quickie(unittest.TestCase):

@@ -15,7 +15,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 # Artifacts in pipeline order. Used to find the furthest one reached.
-PIPELINE = ["BRIEF.md", "EXPLORE.md", "DESIGN.md", "SPEC.md", "PLAN.md"]
+# DESIGN.md is no longer written (/spec absorbed /design, 2026-10-11) but older projects have
+# one; it still shows in "docs", it just isn't a step.
+PIPELINE = ["BRIEF.md", "EXPLORE.md", "SPEC.md", "PLAN.md"]
 
 CHECKBOX = re.compile(r"^\s*[-*]\s*\[([ xX])\]\s*(.+?)\s*$", re.MULTILINE)
 
@@ -208,10 +210,6 @@ def committed(root: Path, name: str) -> bool:
     return r.returncode == 0 and bool(r.stdout.strip())
 
 
-def scaffold_present(root: Path) -> bool:
-    return (root / "Makefile").exists() or (root / "src").is_dir()
-
-
 def git_state(root: Path, name: str) -> str | None:
     """Return a warning if the artifact is uncommitted, else None."""
     def git(*argv: str) -> subprocess.CompletedProcess[str]:
@@ -399,7 +397,7 @@ def assess(root: Path) -> Report:
         return any((root / n).exists() for n in names)
 
     brief = read(root, "BRIEF.md")
-    if brief is None and not later("EXPLORE.md", "DESIGN.md", "SPEC.md", "PLAN.md"):
+    if brief is None and not later("EXPLORE.md", "SPEC.md", "PLAN.md"):
         if not later("DISCOVERY.md", "ROADMAP.md") and (quick := assess_quickie(root)):
             return quick
         return Report(
@@ -415,20 +413,20 @@ def assess(root: Path) -> Report:
         )
 
     explore = read(root, "EXPLORE.md")
-    if explore is None and not later("DESIGN.md", "SPEC.md", "PLAN.md"):
+    if explore is None and not later("SPEC.md", "PLAN.md"):
         return Report(
             stage="explore",
             headline="The brief is written, but nothing has been checked against reality.",
             detail=[
-                "What the candidate tools actually do hasn't been established,"
-                " and design shouldn't start without it — that's how an option"
-                " gets ruled out for a reason that stopped being true.",
+                "What the platform already covers, and what the candidate tools"
+                " actually do, hasn't been established. The spec shouldn't start"
+                " without it — that's how an option gets ruled out for a reason"
+                " that stopped being true.",
             ],
             command="/explore",
         )
 
     blocked = blocked_items(explore) if explore else []
-    design = read(root, "DESIGN.md")
     spec = read(root, "SPEC.md")
 
     # A blocker halts everything downstream, however far along the build is.
@@ -447,20 +445,12 @@ def assess(root: Path) -> Report:
             ),
         )
 
-    if design is None and not later("SPEC.md", "PLAN.md"):
-        return Report(
-            stage="design",
-            headline="Exploration is done and clear. Time to pick a shape.",
-            detail=["EXPLORE.md has no open blockers, so design can start from what's actually true."],
-            command="/design",
-        )
-
     if spec is None and not later("PLAN.md"):
         return Report(
-            stage="contract",
-            headline="A design is chosen. Next is the contract.",
-            detail=["This writes CLAUDE.md and SPEC.md — requirements and verification gates, no code."],
-            command="/contract",
+            stage="spec",
+            headline="Exploration is done and clear. Next is the spec.",
+            detail=["This picks the shape and writes CLAUDE.md and SPEC.md — no code."],
+            command="/spec",
         )
 
     spec = spec or ""
@@ -477,31 +467,29 @@ def assess(root: Path) -> Report:
         warnings.append(f"Every FR in SPEC.md is ticked but PLAN.md has {total - done} unticked"
                         " task(s). Tick or strike them so the plan matches what was built.")
 
+    # [ASSUMED] gates only the plan. Once a plan exists it's too late to keep them out of it,
+    # but each is still a decision nobody made, so it stays a warning.
     assumed = spec.count("[ASSUMED]")
-    if assumed and built:
+    if assumed and (built or plan is not None):
         # Too late to keep them out of the plan, but each is still a decision never made.
         warnings.append(f"SPEC.md still has {assumed} [ASSUMED] tag{'s' if assumed != 1 else ''}"
-                        " nobody ruled on. Run /audit in a fresh session to settle them.")
+                        " nobody ruled on. Keep (remove the tag) or cut each one.")
     elif assumed:
         return Report(
-            stage="audit",
-            headline=f"The spec has {assumed} unresolved [ASSUMED] tag{'s' if assumed != 1 else ''}.",
+            stage="spec",
+            headline=f"The spec has {assumed} [ASSUMED] item{'s' if assumed != 1 else ''} waiting for you.",
             detail=[
-                "Each one is a gap a model filled and you never ruled on."
-                " None should reach the plan.",
+                "Each one is something you didn't say. Keep it (remove the tag)"
+                " or cut it before the plan is written.",
             ],
-            command="/audit",
-            command_note=(
-                "Run this in a brand-new `claude` session in this directory,"
-                " never the current one — continuing defeats the fresh-eyes read."
-            ),
+            command_note="Rule on them in SPEC.md, then /plan.",
             warnings=warnings,
         )
 
     if plan is None and not built:
         return Report(
             stage="plan",
-            headline="The spec is audited and clean. Ready to plan.",
+            headline="The spec is settled. Ready to plan.",
             command="/plan",
             command_note="Restart with `claude --permission-mode plan` first — not just /plan in this session.",
             warnings=warnings,
@@ -509,19 +497,6 @@ def assess(root: Path) -> Report:
 
     project = project_root(root)
     deployed = deployments(project)
-
-    if not built and not scaffold_present(root) and not scaffold_present(project):
-        return Report(
-            stage="scaffold",
-            headline="The plan is written, but there's no scaffold yet.",
-            detail=[
-                "Directory structure, dependencies, a Makefile with a check"
-                " target, and one failing placeholder test — verified running"
-                " and committed before any business logic.",
-            ],
-            command_note="Scaffold first, then the first /slice.",
-            warnings=warnings,
-        )
 
     if not built and next_task and next_task.lstrip("→ ").startswith("/checkpoint"):
         return Report(
@@ -550,40 +525,20 @@ def assess(root: Path) -> Report:
             stage="build",
             headline="You're in the build loop.",
             detail=detail,
-            command="/slice",
+            command="/build",
+            command_note=("The next task is a ⏸ STOP: /build will ask you something first."
+                          if next_task and "⏸" in next_task else None),
             warnings=warnings,
         )
 
     readme = (project / "README.md").exists() or (root / "README.md").exists()
-
-    # Not everything needs deploying (a library, a CLI): a README written after the build counts
-    # as the end. Only when there's neither is /deploy the next step.
-    if not deployed and not readme:
-        return Report(
-            stage="deploy",
-            headline="Everything in the spec is built. Nothing is deployed yet.",
-            command="/deploy",
-            command_note="If there's nothing to deploy, go straight to /complete.",
-            warnings=warnings,
-        )
-
     if not readme:
-        return Report(
-            stage="complete",
-            headline="Built and deployed, but the docs haven't been brought up to date.",
-            detail=[
-                "CLAUDE.md and DESIGN.md were written before the build and"
-                " nothing has revisited them since. There's no README.md.",
-            ],
-            command="/complete",
-            command_note="Run this in the session that did the build — its memory of why things changed is the point.",
-            warnings=warnings,
-        )
+        warnings.append("There's no README.md. The plan's last task should have written one.")
 
     return Report(
         stage="done",
-        headline=("This is built, deployed and documented." if deployed
-                  else "This is built and documented; nothing is deployed.") + " No commands left to run.",
+        headline="This is built." + ("" if deployed else " Nothing deploys it, which is fine if it isn't a service.")
+        + " No commands left to run.",
         detail=[
             *([f"Runs via: {', '.join(deployed)}."] if deployed else []),
             "What's left is operating it: backups for anything that can't be"
@@ -642,7 +597,7 @@ def facts(report: Report, root: Path) -> dict:
         "command": report.command,
         "command_note": report.command_note,
         "warnings": warnings,
-        "docs": [n for n in ["DISCOVERY.md", "ROADMAP.md", *PIPELINE] if (root / n).exists()],
+        "docs": [n for n in ["DISCOVERY.md", "ROADMAP.md", *PIPELINE, "DESIGN.md"] if (root / n).exists()],
         "plan_committed": plan is not None and committed(root, "PLAN.md"),
         "blocked": blocked_items(explore) if explore else [],
         "assumed": spec.count("[ASSUMED]") if spec else 0,

@@ -7,7 +7,7 @@ actually underneath it. Suggest angles I haven't considered, including ones
 that reframe the idea rather than extend it. Tell me if you think the
 interesting version is something adjacent to what I've described.
 
-Three things to hold onto as we talk:
+Four things to hold onto as we talk:
 - Early on, ask whether this already exists. Name the closest things that
   already do it, and what specifically wouldn't fit. Not building it is the
   best available outcome, and bending my habits around someone else's finished
@@ -21,8 +21,12 @@ Three things to hold onto as we talk:
   named the thing myself and framed my idea as an improvement to it, that
   question is closed — don't hand its existence back to me as a finding, and
   don't frame a check that confirms it as vindicating what I already told
-  you. Shift instead to whether the improvement is actually sellable against
-  that product's own user base, and how you'd go about capturing it.
+  you. Shift instead to whether the improvement is worth building and keeping
+  running, over living with the product as it is.
+- Ask what I already run that does part of this. Read
+  `~/projects/platform/PLATFORM.md` and skim the other projects under
+  `~/projects` — an app that's half-built already, or a shared service that
+  covers the hard part, changes the size of this.
 - If you think I'm converging too early on the first workable idea, say so.
 - Somewhere in this, help me work out how big this thing really is: is it one
   build, or a product with several? If it's a product, what's the smallest
@@ -36,7 +40,7 @@ When it does — the actual problem is named, and the one-build-or-several
 question is answered — write DISCOVERY.md: the reframe, the threads that got
 pushed on and how each resolved (including ones that didn't survive), and
 where it landed. Record the reasoning, not a transcript. This is what /brief
-and /roadmap read instead of this conversation, which won't exist for them.
+reads instead of this conversation, which won't exist for it.
 
 **Record who originated each requirement, not who last endorsed it.** Keep
 pushing on the idea — but a requirement you argued me into is yours, and has

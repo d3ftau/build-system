@@ -1,80 +1,81 @@
-Read CLAUDE.md, SPEC.md, and EXPLORE.md (if it exists) in full. Inspect the
-current directory.
-
-Write PLAN.md containing:
-1. **Open questions — as the first numbered tasks, not a note.** Anything
-   BLOCKED in EXPLORE.md, or tagged [BET] or [ASSUMED] in SPEC.md, where being
-   wrong would invalidate work rather than just adjust it.
-
-   - **BLOCKED items come first, always.** These are checkable and unchecked —
-     mostly minutes and no code: request the export, open the file, read the
-     feature page. Nothing that assumes the answer gets planned after them; it
-     gets planned *behind* them.
-   - **A BET that would invalidate the build gets proved by the smallest
-     possible slice of real code**, with everything around it faked — before
-     any work depends on it being true. If the answer only shows up once real
-     data flows end to end, then a thin end-to-end path is the first thing
-     built, not the last. Never sequence a build so an invalidating answer
-     arrives at task 40.
-
-   If this produces a build order that looks wrong to you, order it this way
-   regardless and say why you disagree. A recommendation to do something early,
-   attached to a task numbered late, is not an ordering — /slice follows the
-   numbers, and prose never overrides them. Do not talk yourself out of
-   reordering on the grounds that the dependency is slow to arrive; slow is the
-   argument for starting it first, not for building against a guess meanwhile.
-2. Then the scaffold: a Makefile with `dev`/`test`/`check` targets,
-   `.env.example`, `.gitignore`, and one placeholder test that currently fails
-   — before any business logic. Every later task's verification depends on
-   `make check` existing and being fast; skipping it leaves nothing scoped to
-   check against until the whole build is done.
-3. Then the ordered task list, each task small enough to complete and verify
-   independently. **Sequence it so one real path runs end to end as early as
-   possible** — narrow, not faked. Pick the single simplest case the app exists
-   to handle, and make every stage of it real for that one case, even if it
-   handles that case badly. One real input, through real code at every step, to
-   one real output. Then widen.
-
-   Narrow means *fewer cases*, not *pretend data*. A pipeline that runs end to
-   end on stubbed responses and sample rows proves the wiring and nothing else
-   — every stage still gets its first contact with reality later, all at once,
-   which is the failure this ordering exists to prevent. Fake a stage only when
-   the real thing is genuinely unavailable at that point in the build — an
-   export that hasn't arrived, an API that costs money per call — and when you
-   do, say in the task which stage is faked and which task makes it real.
-
-   Do not build each layer fully in dependency order — all the models, then all
-   the services, then all the routes. Discovering at task 30 that nothing has
-   ever run together is the outcome that ordering produces.
-
-   **One unknown per task.** A new API, a new library, a new pattern — if a
-   task carries two, split it. Two unknowns in one task means a failure can't
-   be traced to either.
-
-   **Group tasks into phases**, each ending in its own checkbox line
-   `- [ ] /checkpoint — <phase name>` — a point where what's been built gets
-   judged on its real output before more is built on top. Roughly every 8–12
-   tasks, and always after anything later tasks depend on for quality. Tasks
-   are checkboxes too, so progress can be read off the file.
-4. For every task:
-   - the exact files it creates or modifies
-   - which FR from SPEC.md it satisfies
-   - **Leaves open:** each decision the task will force that neither this plan
-     nor SPEC.md settles — a policy, a schema detail, what happens in the case
-     nobody named. "None" if genuinely none. /slice shows me these before
-     writing code; anything you leave off gets decided silently.
-   - **Fails if:** for any task whose output has a measurable quality — a match
-     rate, an accuracy, a coverage — the value, measured on real data, below
-     which it isn't good enough to build on. A number in a build note with no
-     threshold is a fact nobody can fail against.
-5. **Human surface check** — a table, not prose. Every FR: which task builds
-   the part a person touches (or "server-only", and why that's enough). Every
-   table in Data Model a person's data lives in: which task gives a way to get
-   data in that isn't SQL. First run: which task gets someone from install to
-   the core loop unaided. Any empty cell is a missing task — add it.
-6. The dependencies you'll install and why each is needed
-7. Anything in the spec that's ambiguous or that you'd do differently, stated
-   plainly
+Read CLAUDE.md, SPEC.md, EXPLORE.md (if it exists) and
+`~/projects/platform/PLATFORM.md` in full. Inspect the current directory.
 
 Do not create or modify any source files. If you are not already in
 plan/read-only mode, treat this instruction as binding: no edits, plan only.
+
+**Proportion.** A personal app. The plan is as long as the build needs and no
+longer — a small app is one or two phases. Size each task as the smallest
+unit with its own test that's worth checking separately: fold setup, config
+and docs into the task whose deliverable needs them, and only split where one
+half could be wrong while the other is right.
+
+## 1. Ask me everything first
+
+/build runs without stopping, so the questions it would have stopped for get
+asked now, in one go.
+
+List every decision this build will force that **changes what I get or see**
+and that neither SPEC.md nor an obvious default settles: a policy, what
+happens in a case nobody named, what a message says, what gets kept or thrown
+away. Number them, and give each your recommended answer, so I can reply
+"defaults" or change two. Then wait.
+
+Leave off anything technical with a sensible default — library choice, file
+layout, config names, lint rules. /build decides those and reports them; you
+don't ask about them and don't list them.
+
+## 2. Write PLAN.md
+
+First line: `# PLAN — <build name from BRIEF.md>`.
+
+**Order.**
+- **An invalidating BET goes first**, proved by the smallest possible slice of
+  real code with everything around it faked. Never sequence a build so an
+  invalidating answer arrives late.
+- **Then one real path, end to end, as early as possible.** The single
+  simplest case the app exists to handle, real at every stage, from real input
+  to real output, even if it handles that case badly. Narrow means fewer cases,
+  not pretend data: a pipeline running on stubbed responses proves only the
+  wiring. Fake a stage only when the real thing is genuinely unavailable yet,
+  and say which task makes it real.
+- **The scaffold is part of that first task**, not a task of its own: Makefile
+  with `dev`/`test`/`check`, `.env.example`, `.gitignore`, the platform's
+  deploy template, and a first real test. No placeholder test that's meant to
+  fail.
+- **The first phase ends deployed for real**: running on the platform, back
+  by itself after a reboot, and a failed run reaches me through the platform's
+  failure route. That's part of the build, not a step after it.
+- Then widen, case by case. Never build layer by layer (all models, then all
+  services, then all routes).
+- **One unknown per task.** A new API, library or pattern each get their own
+  task.
+- **The last task** writes README.md (what it is, how to run it, where data
+  lives, what to back up) and brings CLAUDE.md and SPEC.md in line with what
+  was actually built.
+
+**Phases.** Group tasks into phases, each ending with its own checkbox line
+`- [ ] /checkpoint — <phase name>`, roughly every 8–12 tasks and always after
+anything later tasks depend on for quality.
+
+**Each task** is a checkbox line, `- [ ] **T3 — <what it delivers>.**`, then:
+- the files it creates or changes
+- the FR(s) it satisfies
+- **Fails if:** only when its output has a measurable quality (a match rate,
+  an accuracy) — the number, measured on real data, below which it isn't good
+  enough to build on
+- **`⏸ STOP`** on the checkbox line itself, only when the task carries a
+  decision that step 1 couldn't settle because it needs something the build
+  hasn't produced yet (seeing real output first, say), or proves an
+  invalidating BET. Say what I'll be asked. Most plans have none.
+
+## 3. Then, after the tasks
+
+- **Human surface check** — a short table. Every FR: which task builds the
+  part a person touches, or "server-only" and why that's enough. Every table
+  holding a person's data: which task gives a way in that isn't SQL. Any empty
+  cell is a missing task — add it.
+- **New dependencies**, each with why, and whether the platform already
+  covers it.
+- **Anything in the spec that's ambiguous or that you'd do differently**,
+  stated plainly.
