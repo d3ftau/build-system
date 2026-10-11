@@ -2,7 +2,7 @@
 
 A workflow for taking an idea from a half-formed thought to a solid personal
 app running on `devbox` — quickly, on shared infrastructure, and built so it
-doesn't quietly break a week later. Eight slash commands in `./commands/` are
+doesn't quietly break a week later. Nine slash commands in `./commands/` are
 the executable steps.
 
 **The commands are the source of truth. This document explains them.** Agents
@@ -63,7 +63,7 @@ Four hooks live in `hooks/`, symlinked to `~/.claude/hooks` and wired into
 - `llm-call-guard.sh` (`PostToolUse`, `Edit|Write`) — blocks a new model API
   call in source unless a comment names the fuzzy judgment it requires.
 - `verify-before-stop.sh` (`Stop`) — if the project has a `make check` target,
-  `/build` is the most recent pipeline command, and the turn changed files, it
+  `/build` or `/oneshot` is the most recent pipeline command, and the turn changed files, it
   runs `make check` before the turn may end and blocks with the real failure
   output if it fails. Failures matching a line in the project's
   `.claude/known-failing-checks` are let through; that file is mine, never the
@@ -105,8 +105,30 @@ never committed.
 | Build a phase | `/build` | code, `BUILD-LOG.md`, ticks |
 | Judge the phase | `/checkpoint` (fresh session) | a verdict |
 | When something won't give | `/stuck` | — |
+| **Or, for something small: all of it in one go** | `/oneshot` | `README.md` (To do + Design), `BUILD-LOG.md` |
 
 Commit each document once it's settled.
+
+### `/oneshot` — the whole thing, one session, one approval
+
+For something small enough that the steps above would be ceremony —
+cclauncher's launcher was built this way, from one well-specified request.
+The same rules apply (platform first, proportion, no model for enumerable
+rules, evidence that tests the claim, deployed with a failure route, rulings
+logged); only the separate documents and hand-offs go.
+
+It asks at most three questions, then checks the request really is small and
+recommends the full pipeline if it isn't: several builds, a bet on model
+judgment, an outside product nobody has checked, or a to-do list past about
+ten items. Then a design in chat, short enough for a phone — constraints
+marked stated or inferred, the shape, the decisions I'd notice with defaults,
+and the to-do list. One approval, then it writes README.md (`## To do` +
+`## Design`) and builds straight through, ticking the list.
+
+It writes no BRIEF, SPEC or PLAN, so the dashboard tracks it as a quick
+project: progress from the README's To do list, shipped when the list is
+done, something runs it, and git is clean and pushed. Running `/oneshot` in an
+existing quick project adds to its list.
 
 ### `/discovery` — optional
 
@@ -291,8 +313,9 @@ step:
 - **Deployed** is any of: a compose file, a systemd unit or crontab line that
   runs something from the project's folder, or a workflow publishing GitHub
   Pages.
-- **Quick projects** have no pipeline docs, just code and maybe a README. Their
-  to-do list is a checklist under `## To do` in README.md. One is **done** when
+- **Quick projects** have no pipeline docs, just code and maybe a README —
+  whatever `/oneshot` built, or anything started by hand. Their to-do list is a
+  checklist under `## To do` in README.md. One is **done** when
   every item is ticked (or there's no list), it's deployed, and git is clean
   and pushed.
 

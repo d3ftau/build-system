@@ -8,8 +8,8 @@
 #
 # Detection, two conditions, both read from the transcript:
 #
-# 1. /build is the most recent *pipeline* command (any file in commands/
-#    except /stuck, which happens inside a build). Not "the latest message is
+# 1. /build or /oneshot is the most recent *pipeline* command (any file in
+#    commands/ except /stuck, which happens inside a build). Not "the latest message is
 #    /build": /build pauses at ⏸ STOP tasks, so code is also written in the
 #    turn answering my reply — a plain message.
 # 2. This turn — everything after the latest real user message — used a tool
@@ -44,7 +44,7 @@ verdict=$(jq -rs --arg cmds "$pipeline" '
   | ([ $e[] | select(.key > $turn_start and .value.type == "assistant")
        | .value.message.content[]? | select(.type == "tool_use") | .name ]
      | any(. == "Edit" or . == "Write" or . == "MultiEdit" or . == "NotebookEdit" or . == "Bash")) as $changed
-  | if $cmd == "build" and $changed then "run" else "skip" end
+  | if ($cmd == "build" or $cmd == "oneshot") and $changed then "run" else "skip" end
 ' "$transcript" 2>/dev/null)
 [ "$verdict" = "run" ] || exit 0
 

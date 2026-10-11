@@ -407,9 +407,10 @@ def assess(root: Path) -> Report:
                 "There's no BRIEF.md, so the pipeline hasn't begun.",
                 "If the idea is still half-formed, talk it through first."
                 " If you can already describe 'done' in one sentence, go"
-                " straight to the brief.",
+                " straight to the brief — or, if it's small, build it in one"
+                " go with /oneshot.",
             ],
-            command="/discovery   — or /brief if 'done' is already clear",
+            command="/discovery   — or /brief if 'done' is clear, /oneshot if it's small",
         )
 
     explore = read(root, "EXPLORE.md")

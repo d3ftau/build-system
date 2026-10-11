@@ -159,7 +159,23 @@ class Quickie(unittest.TestCase):
         self.tmp.cleanup()
 
     def test_empty_folder_is_not_started(self):
-        self.assertEqual(self.r.state()["stage"], "not-started")
+        s = self.r.state()
+        self.assertEqual(s["stage"], "not-started")
+        self.assertIn("/oneshot", s["command"])
+
+    def test_oneshot_output_is_tracked_as_a_quickie(self):
+        # What /oneshot writes: README with a To do list and a Design section, plus BUILD-LOG.md.
+        # None of it is a pipeline doc, so the project stays on the quickie track.
+        self.r.write("README.md", "# App\n\nDoes a thing.\n\n## To do\n\n- [x] One path end to end\n"
+                     "- [ ] Deployed, survives reboot, failures reach me\n\n## Design\n\n- Stated: x\n")
+        self.r.write("BUILD-LOG.md", "T1: Ruling: sqlite — platform default — cheap to change\n")
+        self.r.commit()
+        s = self.r.state()
+        self.assertEqual((s["stage"], s["track"]), ("quickie", "quickie"))
+        self.assertEqual([t["done"] for t in s["todo"]], [True, False])
+        # Reverse: adding a pipeline doc moves it onto the pipeline track.
+        self.r.write("SPEC.md", "- [ ] **FR-1 — Thing.** WHEN x\n")
+        self.assertEqual(self.r.state()["track"], "pipeline")
 
     def test_roadmap_only_is_still_pipeline(self):
         self.r.write("ROADMAP.md", "# Roadmap\n")
