@@ -2,7 +2,9 @@ This runs in a brand-new session. If this conversation has history above this
 message, stop and tell me to start a fresh one — the point is a reader who
 didn't build it and hasn't inherited its assumptions.
 
-Read PLAN.md, SPEC.md, CLAUDE.md, BUILD-LOG.md, and DESIGN.md if it exists.
+Read PLAN.md, SPEC.md and CLAUDE.md, and BUILD-LOG.md and DESIGN.md if they exist.
+A build started before 2026-10-11 has no BUILD-LOG.md; its decisions are in the
+plan's and spec's own notes, and you read those instead.
 The phase being checked is everything above the first unticked `/checkpoint`
 line in PLAN.md, back to the previous checkpoint. Every task in it passed its
 own gate — that's already known and isn't the question. The question is
@@ -27,7 +29,8 @@ for me, not on production polish.
    Sort into: **breaks it for me**, **worth fixing**, and **minor** (listed,
    not pushed).
 
-3. **The rulings.** Read BUILD-LOG.md's `Ruling:` lines for this phase. Any
+3. **The rulings.** Read BUILD-LOG.md's `Ruling:` lines for this phase (or,
+   for an older build, the decisions recorded in PLAN.md and SPEC.md notes). Any
    you'd have decided differently, or that quietly changed what I get, name
    them.
 

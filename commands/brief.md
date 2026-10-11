@@ -1,7 +1,8 @@
 Act as a senior software architect. I want to build: $ARGUMENTS
 
-First, read DISCOVERY.md and ROADMAP.md in the current directory if they
-exist. If they do, this brief is for a specific build that came out of that
+First, read DISCOVERY.md and ROADMAP.md if they exist — in the current
+directory, or in the repo root when this folder is one build's folder inside a
+multi-build repo (a `builds/build-N/` layout). If they do, this brief is for a specific build that came out of that
 thinking — don't re-ask what's already settled there. If ROADMAP.md exists,
 confirm which build in it this brief covers before going further.
 
@@ -41,7 +42,9 @@ line, and two lists:
 
 Cutting to the smallest version is what makes a project several builds, so
 the cut is where the roadmap gets written — not by a separate step nobody
-runs. Write or update ROADMAP.md, kept short:
+runs. Write or update ROADMAP.md, kept short. If one already exists in this folder or
+(in a multi-build repo) at the repo root, update that one — never start a second
+roadmap beside it:
 
 - `## What this is` — two sentences.
 - `## Builds` — one `### Build N — <name>` per build, the name being what I get

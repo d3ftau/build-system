@@ -3,12 +3,31 @@ Build the current phase of PLAN.md. $ARGUMENTS
 Read PLAN.md, SPEC.md, CLAUDE.md and `~/projects/platform/PLATFORM.md`. Start
 at the first unticked item.
 
+`$ARGUMENTS` can change this, in plain words:
+- **A path** — "builds/build-2/PLAN.md" — when the plan isn't in the current
+  directory (a repo holding several builds keeps one folder per build; BUILD-LOG.md
+  goes next to that plan).
+- **"one task"** or **"stop after each task"** — build one task, run its checks,
+  report, and stop, the way the old per-task approval worked. For a risky build
+  or one I want to follow closely.
+
+**Older plans** (written before 2026-10-11) differ: tasks may be `### Task N —`
+headings marked done with ✅ instead of checkboxes — mark them done the way the
+plan already does, and don't convert it. They have no `⏸ STOP` marks and were
+written when every task stopped for approval, so a "Leaves open" line there is a
+decision the plan didn't settle: make it a logged ruling if it's cheap to undo,
+and stop and ask if it's expensive to undo or changes what I'd see in a way I
+haven't been shown. If the plan carries no such lines, nothing was left open.
+
 If it's a `/checkpoint` line, build nothing. Tell me the phase is complete and
 that /checkpoint runs in a brand-new session, then stop.
 
 ## Run the phase without stopping
 
-Work task after task until the next `/checkpoint` line. Don't check in between
+Work task after task until the next `/checkpoint` line. An older plan may have
+none: then stop at the next phase heading, and if it has no phases either,
+after about ten tasks — report and stop, so a long plan never runs to its end
+in one go. Don't check in between
 tasks — the questions were asked at /plan, and every round trip that carries
 no decision just costs me waiting time.
 
