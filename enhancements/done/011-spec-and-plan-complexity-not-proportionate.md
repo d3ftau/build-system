@@ -1,6 +1,6 @@
 # Enhancement: Spec and plan complexity doesn't scale to the size of the solution
 
-**Status: OPEN**
+**Status: DONE** (2026-10-11, via `015`) — `spec.md` sets proportion and replaces the failure catalogue with "When it breaks"; `plan.md` asks only decisions that change what the user gets or sees; `audit.md` is gone, its useful part now the five-situation walk at the end of `/spec`.
 
 ## Where this came from
 

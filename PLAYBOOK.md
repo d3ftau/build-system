@@ -1,758 +1,391 @@
 # Build Playbook — idea to working app
 
-A spec-driven workflow for taking an idea from a half-formed thought to a
-running, deployed app on `devbox`. Thirteen slash commands in `./commands/` are
-the executable steps behind each phase below.
+A workflow for taking an idea from a half-formed thought to a solid personal
+app running on `devbox` — quickly, on shared infrastructure, and built so it
+doesn't quietly break a week later. Eight slash commands in `./commands/` are
+the executable steps.
 
-**The commands are the source of truth. This document explains them.** It
-says what each command is for, how to sequence them, and why they ask what
-they ask. Agents never read it — they read the command they were invoked as.
-So anything here describing what *the agent* does is only true if a command
-file or hook makes it so. If this file and a command disagree, the command
-wins and this file is stale. A new rule for the agent goes into a command
-first and gets explained here second. What this file legitimately owns on its
-own is guidance for *me*: when to use the phone, which model, when to kill a
-project.
+**The commands are the source of truth. This document explains them.** Agents
+never read it — they read the command they were invoked as. Anything here
+describing what *the agent* does is only true if a command file or hook makes
+it so; if this file and a command disagree, the command wins and this file is
+stale. What this file owns on its own is guidance for *me*: when to use the
+phone, which model, when to kill a project.
 
-**Scope:** personal tools and proofs-of-concept, for me and occasionally my
-partner. Nothing external-facing.
+**Scope:** personal apps for me and occasionally my immediate family. Nothing
+is sold, nothing is external-facing, and a missed or wrong day costs little.
+Every command scales its rigour to that. (The system was first written for
+apps that might ship to other people; enhancement `015` is where that
+changed.)
 
 ---
 
 ## Opening principle: Tailscale is the auth layer
 
-I never write authentication. Anything another device needs to reach binds
-to the tailnet (plus localhost for same-machine callers), never the LAN and
-never the internet. Anyone on the tailnet is already authenticated by
-Tailscale; anyone not on it cannot reach the service at all. Adding my
-partner is adding a device to the tailnet, not building a login system.
+I never write authentication. Anything another device needs to reach binds to
+the tailnet (plus localhost for same-machine callers), never the LAN and never
+the internet. Anyone on the tailnet is already authenticated by Tailscale.
+Adding my partner is adding a device to the tailnet, not building a login
+system. If something genuinely needs public access or real user accounts, it
+shouldn't be self-hosted here.
 
-If a project genuinely needs public access or real user accounts, that's
-the signal it shouldn't be self-hosted here. Don't bolt auth on. Move it
-somewhere that's built for it.
+## Opening principle: build on the platform
+
+`~/projects/platform/PLATFORM.md` lists what every app shares: one way to
+notify me, one way failures reach me, one way to schedule, one browser image,
+one Ollama, deploy templates, a default stack. `/explore` checks it first,
+`/spec` builds on it, and anything outside it needs a stated reason. That's
+what stops five apps growing five schedulers.
+
+It's a default, not a wall — a clearly better tool that needs new stack is
+weighed, with the cost of keeping one more thing alive stated. And it shares
+**services, not databases**: each app keeps its own data, so one bad migration
+can't take every app down.
 
 ---
 
 ## Advisory vs deterministic
 
-`CLAUDE.md` and skills are advisory. The agent reads them and usually
-follows them — but "usually" is doing real work in that sentence,
-especially once context fills up. Hooks are deterministic: scripts that
-fire on a lifecycle event and cannot be talked out of running.
+`CLAUDE.md` and commands are advisory: the agent usually follows them, and
+"usually" does real work in that sentence once context fills up. Hooks are
+deterministic: scripts that fire on a lifecycle event and can't be talked out
+of running. Conventions go in `CLAUDE.md`; anything that must actually hold
+goes in a hook.
 
-Use `CLAUDE.md` for conventions and preferences. Use hooks for anything
-that must actually hold — typechecks, tests, lint, secret scanning.
+Four hooks live in `hooks/`, symlinked to `~/.claude/hooks` and wired into
+`~/.claude/settings.json` for every project:
 
-Four generic hooks live in `hooks/` in this repo, symlinked to
-`~/.claude/hooks` and wired into `~/.claude/settings.json` so they apply to
-every project on this machine, not just one:
+- `git-guard.sh` (`PreToolUse`, `Bash`) — blocks commits that bypass hooks or
+  signing, and commits of anything that looks like a secret.
+- `no-skipped-tests.sh` (`PostToolUse`, `Edit|Write`) — blocks an edit that
+  adds a skip/xfail/disable marker to a test, and blocks the agent editing
+  `.claude/known-failing-checks`.
+- `llm-call-guard.sh` (`PostToolUse`, `Edit|Write`) — blocks a new model API
+  call in source unless a comment names the fuzzy judgment it requires.
+- `verify-before-stop.sh` (`Stop`) — if the project has a `make check` target,
+  `/build` is the most recent pipeline command, and the turn changed files, it
+  runs `make check` before the turn may end and blocks with the real failure
+  output if it fails. Failures matching a line in the project's
+  `.claude/known-failing-checks` are let through; that file is mine, never the
+  agent's.
 
-- `git-guard.sh` (`PreToolUse`, `Bash`) — blocks any `git commit` that
-  bypasses hooks or signing (`--no-verify`, `--no-gpg-sign`,
-  `commit.gpgsign=false`), and blocks committing anything that looks like a
-  secret (`.env`, `.pem`, `.key`, `id_rsa`/`id_ed25519`/`id_ecdsa`).
-- `no-skipped-tests.sh` (`PostToolUse`, `Edit|Write`) — blocks an edit to a
-  test file that introduces a skip/xfail/disable marker (pytest, Jest/Mocha,
-  JUnit, xUnit, Rust, etc.), enforcing the gate-gaming guard below at the
-  moment the edit happens, not after the fact. Also blocks the agent editing
-  `.claude/known-failing-checks` (see next-but-one bullet).
-- `llm-call-guard.sh` (`PostToolUse`, `Edit|Write`) — blocks an edit that
-  introduces a new model API call in a source file unless a comment names
-  the fuzzy judgment it requires. Never use an LLM for work code can do.
-- `verify-before-stop.sh` (`Stop`) — if the project has a `Makefile` with a
-  `check` target, `/slice` is the most recent pipeline command, and the turn
-  changed files, runs `make check` before the turn is allowed to end and
-  blocks with the real failure output if it doesn't pass. Keyed to the turn
-  that changed files rather than the turn that typed `/slice`, because
-  `/slice` stops for approval first and the code lands in the turn after.
-  Failures matching a line in the project's `.claude/known-failing-checks`
-  (the scaffold's placeholder test, say) are let through — that file is
-  mine to edit, never the agent's.
+**Never accept "it works" as evidence.** Demand the actual command output. The
+failure mode isn't the agent lying — it's the agent believing itself.
 
-**Never accept "it works" as evidence.** Demand the actual command output,
-not a summary of it. The failure mode isn't the agent lying — it's the
-agent believing itself.
-
-**Guard against gate-gaming.** Tests may never be skipped, xfailed, or
-deleted to make a gate pass. If a test fails, fix the code — or say the
-test is wrong and why. Reducing coverage to go green is a failure, not a
-fix.
+**Guard against gate-gaming.** Tests may never be skipped, xfailed or deleted
+to make a gate pass. Reducing coverage to go green is a failure, not a fix.
 
 ---
 
-## Phase 0 — one-time setup
+## Setup — once per machine
 
-Done once per machine, not once per project.
+- `~/.claude/commands` → `build-system/commands`, `~/.claude/hooks` →
+  `build-system/hooks` (symlinks), hooks wired in `~/.claude/settings.json`.
+- The platform set up per `~/projects/platform/README.md`.
+- `~/.claude/CLAUDE.md` carries machine facts and standing preferences into
+  every session; a project's `CLAUDE.md` adds only its own rules.
+- No plugin is required. (Superpowers was installed until 2026-10-11; its
+  useful ideas now live in `/plan`, `/build`, `/checkpoint` and `/stuck`.)
 
-- **Install a spec-driven plugin.** Either Superpowers
-  (`/plugin install superpowers@claude-plugins-official`) or GitHub Spec Kit
-  as the more structured alternative, if neither is already installed. This
-  playbook's commands assume one of them is available.
-  Superpowers ships 14 skills; most duplicate a phase this playbook already
-  owns (or add branch/worktree/parallel-agent ceremony this solo scope
-  doesn't need), so only four are left enabled — the rest are turned off via
-  `skillOverrides` in `~/.claude/settings.json`:
-  - `systematic-debugging` — a stricter, proactive upgrade on `/stuck`
-  - `test-driven-development` — the playbook never specified *how* code
-    gets written inside a slice; this fills that gap
-  - `requesting-code-review` / `receiving-code-review` — a review step the
-    pipeline otherwise has no equivalent for
-  Note: Superpowers' `SessionStart` hook still force-injects its
-  `using-superpowers` dispatcher text every session regardless of
-  `skillOverrides` — that skill can't be actually invoked (blocked by the
-  override), but the injected text remains. There's no supported per-hook
-  toggle to suppress just that; living with the noise was chosen over
-  disabling the whole plugin or hand-patching the installed plugin cache.
-- **`~/.claude/CLAUDE.md` is inherited global context.** It carries machine
-  facts and standing preferences into every project's session automatically —
-  project `CLAUDE.md` (Phase 2) adds project-specific rules on top of it, it
-  never needs to restate it.
-- **Standing rules, no exceptions:**
-  - Everything lives in git from the first commit.
-  - Config via environment variables only — never hardcoded paths or
-    hostnames.
-  - No hardcoded paths — a devbox-specific path baked into code breaks the
-    escape hatch (Phase 5) later, when it's expensive to fix.
-  - Secrets live in `.env`, never committed.
-  - Every service something relies on gets an Uptime Kuma monitor before it
-    counts as done (see Phase 5 — which services that is depends on shape).
+Standing rules: everything in git from the first commit; config from
+environment variables, never hardcoded paths or hostnames; secrets in `.env`,
+never committed.
 
 ---
 
-## Phase 0.5 — Discovery (optional)
+## The steps
 
-**Command:** `/discovery <whatever you've got, however half-formed>`
+| Step | Command | Writes |
+|---|---|---|
+| Think it through (optional) | `/discovery` | `DISCOVERY.md` |
+| Decide what this build is | `/brief` | `BRIEF.md`, `ROADMAP.md` if anything is deferred |
+| Check reality | `/explore` | `EXPLORE.md` |
+| Write the contract | `/spec` | `SPEC.md`, project `CLAUDE.md` |
+| Plan it | `/plan` (in plan mode) | `PLAN.md` |
+| Build a phase | `/build` | code, `BUILD-LOG.md`, ticks |
+| Judge the phase | `/checkpoint` (fresh session) | a verdict |
+| When something won't give | `/stuck` | — |
 
-Unstructured and conversational — a thinking partner, not an architect.
-Divergent on purpose: it pushes on the idea, suggests reframes, and asks
-what problem is actually underneath it, rather than narrowing toward a
-spec. Best done walking. Skip it when I can already describe "done" in one
-sentence and I'm confident it's the right thing.
+Commit each document once it's settled.
 
-Early on it asks whether this already exists — searched, not recalled, and as
-two separate searches: commercial products, and GitHub/open source (judged
-first on stars and last-commit date). One search category returning nothing
-is not "this doesn't exist." If I've already named the existing thing and
-framed the idea as an improvement on it, that question is closed and the
-conversation moves to whether the improvement is worth anything to that
-product's users.
+### `/discovery` — optional
 
-One thing discovery should always surface: is this one build, or a product
-with several pieces? If it's a product, run `/roadmap` next.
+A thinking partner, not an architect. It pushes on the idea, suggests
+reframes, and asks what problem is underneath. Early on it asks whether this
+already exists — searched, as two separate searches (commercial and
+open source) — and what I already run that does part of it. It works out
+whether this is one build or several. Skip it when I can already describe
+"done" in one sentence.
 
-**Command:** `/roadmap`
+It records who originated each requirement. A requirement the agent argued me
+into stays visibly the agent's, because nothing downstream can recover the
+difference once it's lost.
 
-Reads the discovery conversation and writes `ROADMAP.md`: the spine (the
-one capability everything else hangs off), the builds in order, and why
-that order. Each build is headed `### Build N — <name>`, the name being what the
-user gets in 2–5 words, not how it's built (the cclauncher dashboard shows it as the
-product's progress). The test applied to every build in the roadmap: **would I use
-this if nothing after it ever got built?** If no, that build is scoped
-wrong — not too small, too dependent on something that doesn't exist yet.
-Re-scope it or merge it forward until the answer is yes. If the idea
-genuinely doesn't decompose, the roadmap should say so honestly rather than
-manufacture a fake incremental plan.
+### `/brief`
 
----
+Up to four targeted questions, one at a time, plus two that are always asked:
+**what's the smallest version I'd actually use**, and **who looks at this and
+what should using it feel like.** Scope only grows on its way to the brief,
+and if nobody asks about the experience, the first screen built becomes the
+design. The stakes aren't asked — they're fixed (personal).
 
-## Phase 1 — Brief
+The brief ends with a **Later** list (wanted, not now) and a **Never** list
+(rejected). Cutting to the smallest version is what makes a project several
+builds, so when Later isn't empty, `/brief` writes or updates `ROADMAP.md`
+itself: `### Build N — <name>` per build, names being what I get, which the
+dashboard shows. There's no separate roadmap step, because a separate step
+was the one that never ran (`012`).
 
-**Command:** `/brief <one sentence description>`
+If the brief can't fit in a paragraph, the scope is wrong.
 
-First checks for `DISCOVERY.md` and `ROADMAP.md` in the current directory.
-If they exist, this brief is for a specific build that came out of that
-thinking, so it doesn't re-ask what's already settled — and if `ROADMAP.md`
-exists, it confirms which build in it this brief covers before going
-further.
+### `/explore`
 
-Then up to five targeted questions, one at a time, waiting for an answer
-before asking the next — covering only what isn't already answered: what
-"done" looks like concretely, data and storage, edge cases and failure modes,
-and who else touches it. Fewer than five if discovery already covered some.
+The first step that touches the real world, before anything is designed.
+It starts with the platform: what's already covered, and which existing
+project already does something like this. Then it looks further — two
+separate searches, commercial and open source — and checks what each
+candidate actually does now, never from recall. A candidate that needs new
+stack stays in the running with its keep-alive cost stated.
 
-Two questions are always asked, however settled they look: **what's the
-smallest version I'd actually use**, and **who looks at this and what should
-using it feel like.** Nobody volunteers either — scope only grows on its way
-to the brief, and if no one asks about the experience, the first screen built
-becomes the design by default. No solutions, no code. Once it has what it
-needs, it synthesises everything into a plain markdown brief under 250 words,
-with a "Who sees it" line and an explicit "Out of scope" list, saved as
-`BRIEF.md`.
-
-If the brief can't fit in a paragraph, the scope is wrong. Cut it.
-
-**Commit:** `BRIEF.md` once synthesised.
-
----
-
-## Phase 1.5 — Explore
-
-**Command:** `/explore`
-
-Everything up to here is talking and writing. This is the first step that
-touches the real world, and it comes before design on purpose: choosing
-between shapes on stale product knowledge is how an option gets ruled out for
-a reason that was never true.
-
-It reads `BRIEF.md` alone. From it, names the classes of tool that could solve
-this and the leading candidates in each — found by two separate searches,
-commercial products and GitHub/open source, neither a fallback for the
-other — then checks what each actually does now — never from recall, always
-looked up fresh. Findings go in `EXPLORE.md`:
-**CONFIRMED**, **WRONG** (with what's actually true), **BLOCKED** (checkable,
-not yet checked), or **BET** (genuinely unknowable without building).
-
-The line between the last two is the one that matters. Something is only a bet
-if checking is *impossible*, not if it's slow or fiddly — needing an account,
-a signup, or a week for an export to arrive all leave it BLOCKED. `/contract`
-refuses to write a spec while anything is BLOCKED, rather than speccing around
-a guess. Genuine bets get built against only after saying what being wrong
-costs, and any bet that would invalidate the build has to be proved by the
-smallest possible slice of real code first, everything else faked — never
-discovered at the end of a plan.
-
-Most things that feel like bets are just unchecked. Of five open questions in
-the first real project through this playbook, four were answerable inside a
-week and only one needed the build to exist.
+Findings are **CONFIRMED**, **WRONG**, **BLOCKED** (checkable, unchecked) or
+**BET** (unknowable without building). The line between the last two is the
+one that matters: needing an account or waiting a week for an export is
+BLOCKED, not a bet. `/spec` refuses to write anything while something is
+BLOCKED.
 
 The failure this exists to prevent: asserting that a whole product category
-can't do something, when it's a standard feature. That doesn't just pick the
-wrong option — it invents a subsystem to work around a limitation that was
-never real.
+can't do something standard, and inventing a subsystem to route around a
+limitation that never existed (see the worked example below).
 
-It finishes with what's ruled in and out — the candidates still viable, and
-what eliminated the rest. That's `/design`'s starting position.
+### `/spec`
 
-**Commit:** `EXPLORE.md` once the findings are recorded.
+Picks the shape and writes the contract. Usually there's one obvious shape on
+the platform and that's a line; if there's a real choice, I pick. If anyone
+sees anything, it asks about look and feel rather than inventing one.
 
----
+Then `SPEC.md` — Purpose, Shape, Functional Requirements, Data Model,
+Interfaces, Human Surfaces, When it breaks, Verification Gates — and the
+project's `CLAUDE.md`. Proportion is the rule: every line has to change what
+gets built, no invented thresholds or failure catalogues, and a one-build app
+past about a dozen FRs has to say why (`011`). Requirements are
+`- [ ] **FR-3 — Name.** WHEN … THE SYSTEM SHALL …`; the dashboard shows the
+names. Any FR where a person does something names the screen it happens on —
+a row in a database is observable and nobody can use it.
 
-## Phase 1.75 — Design
+**One mark: `[ASSUMED]`** on anything I didn't say. A document is never a
+source — "DESIGN.md says so" is the agent's own writing. Obvious defaults
+aren't marked. At the end, every `[ASSUMED]` item is listed for me to keep
+(the tag comes off) or cut. That's what's left of the old five-tag provenance
+system and `/audit`: the one useful thing they did was stop a phantom
+requirement becoming a schema.
 
-**Command:** `/design`
+It ends with **what would bite me**: the five situations most likely to go
+wrong in real use, each walked through the spec to see what actually happens
+to me. Five, because the cap keeps it about my life with the app rather than
+the spec's wording. This is the part of the old `/audit` that earned its
+place — fashion-bot's one useful finding (dedupe ignoring size) came from
+exactly this question.
 
-Reads `BRIEF.md` and `EXPLORE.md`, and builds its options on what `/explore`
-found rather than on recall. Identifies the genuinely distinct ways this
-could be built — not variations on one idea, different shapes with different
-centres of gravity. However many actually exist: two, five, or honestly
-just one, with an explanation of why the obvious alternatives don't hold
-up. No padding a list to make it look fuller.
+### `/plan`
 
-For each option: what it fundamentally is, what it makes easy or hard or
-forecloses, what it'd be good at in a year that the others wouldn't, and
-roughly how much work v1 is. It recommends one and says what would change
-its mind. It must not assert what a product or tier can't do beyond what
-`EXPLORE.md` established, and must mark any prediction about model judgment
-as untested rather than as a conclusion.
+Run with `claude --permission-mode plan` — plan mode can't edit files.
 
-I pick one option or a hybrid. `DESIGN.md` records all the options
-considered, what was picked, and why — including what was rejected and
-why. That record is what stops me re-litigating the same decision in three
-months when I'm tempted to rebuild.
+It asks first: **every decision the build will force that changes what I get
+or see**, in one numbered list with a recommended answer each, so I can reply
+"defaults". This is what used to happen one task at a time inside `/slice`;
+asking it all up front is what lets `/build` run without stopping.
+Technical choices with sensible defaults aren't asked — `/build` makes them
+and logs them.
 
-If a person sees anything, `DESIGN.md` also gets a **Look and feel** section
-— asked, not filled in. If I don't care, that's written down too, along with
-the rule that the first screen built sets the style and gets shown to me
-before a second one is built.
+Then `PLAN.md`. **The order is the point.** An invalidating bet is proved
+first with the smallest real slice of code. Then one real path end to end as
+early as possible — the simplest case, real at every stage, narrow not fake.
+The scaffold is part of that first task, not its own (`014`). The first phase
+ends **deployed for real**: running on the platform, back by itself after a
+reboot, and a failed run reaches me. The last task writes the README and
+brings the docs in line with what was built. That's where `/deploy` and
+`/complete` went: steps that ran after "done" never ran.
 
-**Commit:** `DESIGN.md` once the choice is recorded.
+Tasks are checkboxes grouped into phases, each ending in
+`- [ ] /checkpoint — <phase>`. A task carries **Fails if** only when its
+output has a measurable quality, and **`⏸ STOP`** only when it holds a
+decision that can't be settled until the build produces something. Most plans
+have no stops.
 
----
+I review the plan on my phone: how far down is the first end-to-end run, is
+anything I'd care about missing from the human-surface table, and does the
+ambiguity section show the spec was unclear somewhere. Fixing a plan costs
+seconds; fixing code costs hours.
 
-## Phase 2 — Contract
+### `/build`
 
-**Command:** `/contract`
+Builds a whole phase without stopping. The questions were asked at `/plan`,
+and a stop that carries no decision just costs me waiting (`013`) — "the best
+builds were the ones I got out of the way of".
 
-Reads `BRIEF.md`, `DESIGN.md`, and `EXPLORE.md` (if they exist), and
-`~/.claude/CLAUDE.md` for machine and stack defaults, then writes two files
-and nothing else — no source code, no directories, no installs.
+It stops only at a `⏸ STOP` task, for something destructive,
+security-sensitive or outside the project, after two failed attempts at the
+same problem, or when the plan is too wrong to guess past. Everything else it
+decides and logs in `BUILD-LOG.md` as
+`Ruling: what — why — what it costs if wrong`. A ruling that changes what I
+see takes the easiest-to-undo option and is flagged "you'd notice". The log is
+also its memory across context compaction.
 
-**`CLAUDE.md`** — project-specific rules only: tech stack for this project
-with exact versions where they matter, hard rules the agent must never
-break, where data lives, what must never be installed or used. It also
-carries the gate-gaming guard verbatim (see above).
+Per task: watch a new test fail first; never a model call for enumerable
+rules; evidence has to test the claim itself (a bug is real only if reality
+can produce it, an invented test input is a finding, test the reverse of
+every state change); tick, commit, log.
 
-**`SPEC.md`** — Purpose, Functional Requirements, Out of Scope, Data
-Model, Machine Interfaces, Human Surfaces, External Dependencies, Failure
-Modes, Verification Gates. Every FR is a numbered, independently verifiable
-checkbox that opens with a 2–5 word feature name
-(`**FR-3 — Recipe import from URL.**`, the cclauncher dashboard shows these as the build's
-feature list) and is phrased as
-"WHEN `<trigger>` THE SYSTEM SHALL `<observable behaviour>`" — "search
-should be fast" is untestable, "WHEN the user types in the search box THE
-SYSTEM SHALL filter the visible list within 200ms" is testable.
+The phase ends with a **report written for learning**: what I can do now and
+how to see it, every ruling, one or two things worth understanding about how
+it works, and the real `make check` output. Being involved taught me a lot;
+this keeps that without making me the bottleneck.
 
-**Observable by whom** is the question that phrasing doesn't ask on its own.
-A row in a database is observable and nobody can use it. Any FR where a
-person enters, sees, reviews or chooses something names the human surface it
-happens on, and every table a person's data goes into needs a surface that
-gets it there — hand-written SQL doesn't count. Without that section, a spec
-can describe a complete backend accurately and the FR checkboxes go green on
-a product nobody can use.
+### `/checkpoint` — fresh session
 
-Every FR and every constraint is tagged:
+`/build` checks each task against its own gate; nothing else asks **is what
+this phase built good enough to build the next one on?** — and a component
+passing its gate at 33% correct can hold up everything above it for weeks
+(`009`). `/checkpoint` runs the phase's output on real data and measures it,
+reads the code fresh and grades each problem by what it does to me, reviews
+the build's rulings, looks for patterns no task decided, and checks the rest
+of the plan still holds. Fresh session, because the one that built it
+inherited the assumptions it's meant to question. It recommends proceed, fix
+first, or re-plan; I decide.
 
-- `[STATED]` — I raised it myself, unprompted, in my own words
-- `[AGREED]` — the agent proposed it and I said yes
-- `[DERIVED]` — follows necessarily from a `[STATED]` (chain shown)
-- `[ASSUMED]` — the agent filled a gap I never ruled on
-- `[BET]` — rests on a `BET` in `EXPLORE.md`
+### `/stuck`
 
-Verification gates are exact shell commands that must exit 0 — `make check`
-exits 0, `pytest` passes with no skipped tests, `curl -s localhost:PORT/health`
-returns 200. Commands, not adjectives.
-
-**Commit:** `CLAUDE.md` and `SPEC.md` once written — before starting the
-audit, so the pre-audit spec is a distinct commit from the post-audit one.
-
----
-
-## Phase 2.5 — Audit
-
-**Command:** `/audit`, run in a **fresh session with no prior context.**
-
-This matters — the point is removing the conversation history that made an
-invented constraint feel natural. The agent reads only `SPEC.md`, as if
-seeing it for the first time, and:
-
-1. Lists every constraint it believes the system must satisfy, quoting the
-   exact line in `SPEC.md` that establishes it — a quote proves the
-   requirement was written down, not that it's right
-2. Audits the tags themselves: a `[STATED]` whose only support is a document
-   rather than a person's words is mis-tagged; a `[DERIVED]` chain must
-   bottom out in a `[STATED]`; for every `[AGREED]`, would I have asked for
-   it unprompted?
-3. Flags any requirement that predicts how well a model will judge
-   something — classify text, spot intent — and asks whether it's been
-   tested against a real example or only written down
-4. For each constraint, asks what would be built differently if it were
-   removed, flagging any whose removal changes nothing as possibly
-   redundant or not load-bearing
-5. Reads the spec against itself, quoting any two passages that can't both
-   be true
-
-This catches two failure modes: a phantom constraint invented from a
-passing remark, and a silent choice made among several valid readings that
-was never flagged at all. The second is worse — a phantom usually leaves a
-trace, a silent choice leaves nothing to find. Nothing tagged `[ASSUMED]`
-proceeds to Phase 3 unresolved.
-
-**Commit:** `SPEC.md` once every `[ASSUMED]` tag is resolved. This is the
-checkpoint that matters most — everything from Phase 3 onward builds
-against this spec, so the audited version needs to be the one in git, not
-just the one open in the editor.
+Root cause before any fix: read the whole error, find something similar that
+works and list every difference, and find which hand-off breaks instead of
+guessing. Then what was expected, what happened, two approaches, one
+recommended. A third failed fix means the design is wrong, not the fix — go
+back to the spec or plan rather than forcing the code to comply.
 
 ---
 
-## Phase 3 — Plan
+## Where it lives
 
-**Setup:** `claude --permission-mode plan`, then `/plan`
+devbox is the default. Route elsewhere when it has to be up while devbox is
+off (cheap VPS), needs a public URL or real accounts (not self-hosted), or
+*is* auth, payments or compliance (don't build it). Every project stays
+liftable: config from `.env`, nothing devbox-specific in code or compose, state
+in `./data`.
 
-Plan Mode is a permission mode where the agent cannot edit files — an
-enforced constraint, not a polite request. `/plan` reads `CLAUDE.md` and
-`SPEC.md` in full, inspects the current directory, and writes `PLAN.md`:
-an ordered task list where each task is small enough to complete and
-verify independently and carries one unknown at most, the exact files each
-task touches, which FR each task satisfies, the dependencies it'll install
-and why, and anything in the spec that's ambiguous or that it would do
-differently. Each task also names what it **leaves open** — decisions the
-plan doesn't settle that the code will have to — and, if its output has a
-measurable quality, the value that **fails** it. Tasks are grouped into
-phases, each ending in a `/checkpoint` line. A human surface table maps
-every FR and every user-data table to the task that gives a person a way in.
-
-**The order is the point, not just the contents.** `/plan` is told to
-sequence the list so one real path runs end to end as early as possible —
-the simplest case the app exists to handle, real code at every stage,
-widened afterwards. Phase 4's build philosophy has to be decided here,
-because `/slice` follows the numbers and can't recover an ordering the
-plan didn't have.
-
-I review `PLAN.md` on my phone, watching for wrong technology choices,
-missing FRs, tasks that are secretly four tasks, unnecessary dependencies,
-and — before anything else — **how far down the list the first end-to-end
-run is.** If nothing runs whole until task 30, the plan is wrong regardless
-of how good the tasks are. Then the human surface table — an empty cell is a
-missing task. Then the ambiguity section and the "leaves open" lines, the most
-valuable part: if the agent found something unclear, the spec was unclear.
-
-Fixing a wrong plan costs ten seconds — edit a text file. Fixing wrong code
-costs hours. That asymmetry is the entire point of this phase.
-
-**Commit:** `PLAN.md` once reviewed and approved.
+**Kill criteria:** three months unused means decommission it. An unused
+container is attack surface and upkeep for nothing.
 
 ---
 
-## Phase 4 — Build
+## Skipped steps and quick projects
 
-**Scaffold first, always.** Before any business logic: directory
-structure, dependency install, a Makefile with dev/test/check targets,
-`.env.example`, `.gitignore`, a `/health` endpoint returning 200 if other
-devices will reach it, and one
-placeholder test that currently fails. No business logic yet. Verify it
-actually runs — `make check`, real output — and commit it before touching
-logic. This separates environment problems (dependency conflicts, port
-collisions, container networking) from logic problems; debugging both at
-once is where builds die.
+`bin/build-state` (read by the cclauncher dashboard) doesn't insist on every
+step:
 
-**Command (repeated):** `/slice`
-
-Implements the next unstarted task from `PLAN.md` — only that task.
-**Before writing any code** it says which task, what will change, and every
-decision the task forces that the plan doesn't settle — then waits for my
-go-ahead. The decisions that get reversed are almost never the thing the task
-named; they're the adjacent policy, prohibition or schema nobody asked for,
-and they're one sentence to reject before the code exists and an afternoon
-after. When done: run `make check` and paste the real terminal output, tick
-the task and the FR checkboxes it satisfies, list any decision made that
-wasn't approved, show the diff, then stop without starting the next task.
-Review and commit between slices.
-
-Evidence has to test the claim itself, not something next to it. A bug is
-real only if the real upstream system can produce it — a passing repro proves
-the code allows it, nothing more. A test input that had to be invented to
-reach a branch is a finding, not a coverage task. Every state change gets
-tested in reverse. A task with a "fails if" threshold is measured on real
-data, and isn't done below it.
-
-**Vertical slices, not horizontal layers.** Build one complete path from
-input to output — even handling a single case badly — then widen it.
-Never build all the models, then all the services, then all the routes:
-nothing works until the very end and there's no way to verify along the
-way.
-
-**Narrow and real, not wide and fake.** The slice handles fewer cases, not
-pretend data. One real input, real code at every stage, one real output —
-then widen to the next case. A pipeline running end to end on stubbed
-responses and sample rows proves the wiring and nothing else: every stage
-still meets reality later, all at once, which is exactly what slicing is
-supposed to prevent.
-
-**Fake only what isn't available yet.** An export that hasn't arrived, an
-API that costs money per call, a service that needs credentials I don't
-have — those get stubbed, because the alternative is stopping. Everything
-else gets built real from the first slice. When something is faked, the
-plan says which task makes it real, and that task comes early.
-
-**One unknown at a time.** A new API and a new library and a new pattern
-in one slice is how one-shots fail. Sequence them. If a slice has two
-unknowns, split it.
-
-**Command:** `/checkpoint`, run in a **fresh session**, whenever the next
-unticked line in `PLAN.md` is one.
-
-`/slice` checks a task against its own gate; `/audit` checks documents at the
-end. Neither owns the question **is what this phase built good enough to build
-the next one on?** — and in a 60-task build, a component that passed its gate
-at 33% correct can hold up everything above it for weeks. `/checkpoint` runs
-the phase's output on real data and measures it, looks for patterns several
-tasks inherited from each other without anyone deciding them, and checks
-whether the remaining tasks still rest on decisions that hold. Fresh session
-because the session that built it has inherited the very assumptions it's
-meant to question. It reports and recommends proceed, fix first, or re-plan;
-I decide.
-
-**Command:** `/stuck`
-
-If two attempts at the same slice fail, stop iterating and change
-approach. The agent explains in plain English what it expected, what
-actually happened, and what it thinks the root cause is, then lists two
-different approaches with tradeoffs and recommends one, stating what would
-make it wrong. Still stuck after that? The spec or plan is wrong — go fix
-it rather than forcing the implementation to comply.
-
----
-
-## Phase 5 — Deploy
-
-### Where does it live?
-
-Devbox is the default. Route elsewhere when:
-
-| Situation | Where it lives instead |
-|---|---|
-| Needs to be up while devbox is down or I'm gaming | Cheap VPS |
-| Needs a public URL or real user accounts | Not self-hosted at all |
-| Sends email at volume | Managed sending service |
-| Outgrows SQLite or needs real concurrency | Managed Postgres |
-| Large file storage | Object storage |
-| It IS auth, payments, or compliance | Don't build it |
-
-Cloudflare Tunnel is the middle ground for genuine public access without
-leaving devbox — but it moves the service outside the tailnet boundary, so
-the "anyone who can reach it is already authenticated" assumption (see
-Opening principle) stops holding. Anything tunneled needs its own auth.
-
-**Command:** `/deploy`
-
-First it classifies the project, because not everything is a web service:
-
-| Shape | Ports | Health |
-|---|---|---|
-| **Reached from other devices** | `127.0.0.1:PORT:PORT` and `${TAILSCALE_IP}:PORT:PORT` | healthcheck on `/health` |
-| **Local only** — only this box calls it | `127.0.0.1` only, or none (shared Docker network) | whatever the service already answers; no `/health` added just for this |
-| **Not a service** — CLI or scheduled job | none | one real run, output and exit code; for a scheduled job, where a failed run shows up |
-
-Never `0.0.0.0`. Same-machine callers use localhost; the Tailscale IP is only
-for other devices. Every shape: multi-stage build, minimal final image,
-persistent data under `./data`, config from `.env` with nothing
-devbox-specific in the compose file, no obsolete `version:` key. Then it
-brings the stack up, verifies it for its shape, and shows `docker ps` and
-`docker compose logs --tail 20`.
-
-Before calling it done:
-
-- [ ] `docker compose up -d --build` succeeds from cold
-- [ ] `docker ps` shows no `0.0.0.0` in PORTS
-- [ ] Reached from other devices only: reachable from phone over Tailscale,
-      Uptime Kuma monitor hitting `/health`
-- [ ] Local only: a monitor only if something I rely on would break
-      silently while it's down
-- [ ] Stack visible in Dockge
-- [ ] **Reboot test** — the box (or at least the container) survives a
-      restart and comes back up on its own. Wi-Fi associates slowly on
-      cold boot on this machine; this is not optional.
-
-### Escape hatch
-
-Anything that ever goes external won't be self-hosted, so every project
-must stay liftable — off devbox and onto a VPS, someone else's box, or
-anywhere else — without a rewrite:
-
-- Config via environment variables only, nothing devbox-specific baked
-  into code.
-- No devbox-specific paths, IPs, or hostnames hardcoded anywhere.
-- `docker-compose.yml` would run unmodified on a different host — the
-  only per-machine input is `.env`.
-- State lives in a volume or a database, not scattered across the
-  filesystem in ad hoc locations.
-
-If lifting a project would be painful, that's a design smell — fix it now,
-while the project is small, not after it's grown around the assumption.
-
----
-
-## Phase 6 — Operate
-
-**Command:** `/complete`, run in the **same session** as the build.
-
-`CLAUDE.md` and `DESIGN.md` are written before the build and nothing else
-touches them, so they rot — "not yet registered" five commits after it was.
-`/complete` checks every project doc against the actual state (git log, files,
-running config), shows me what's stale, fixes it, and writes `README.md`: what
-it is, how to run it, where the data lives, what to back up. Same session,
-unlike `/audit`, because the session's memory of *why* things changed is what
-makes a doc explain instead of list — but every *fact* it writes is checked
-against the real state, never recalled. Anything irreplaceable — state that can't be
-regenerated from git plus a fresh build — gets backed up; everything else
-is disposable by design, since the whole point is `git pull && docker
-compose up` recovery.
-
-**Kill criteria:** if a project goes three months without being used,
-that's the signal to decommission it, not to keep it running out of
-inertia. An unused container is not a free asset — it's attack surface and
-maintenance debt for zero return.
-
----
-
-## Default stack
-
-Pre-decided so no build re-litigates them. Deviate only with a stated
-reason.
-
-| Need | Default | Notes |
-|---|---|---|
-| Headless automation, scraping, pipelines | Python + `uv` | |
-| API | FastAPI | |
-| UI — app-shaped | Next.js + TypeScript + Tailwind | Heavily represented in training data; models write it well |
-| UI — dashboard-shaped | Streamlit | When it's a readout, not an app. Ugly is fine. |
-| State | SQLite | Postgres only when concurrency or size demands it |
-| Scheduling | APScheduler in-process, or a systemd timer | |
-| Notifications | Telegram bot | One bot, many apps, separate threads |
-| Local inference | Ollama on the tailnet IP | Bulk text, classification, extraction — not code generation |
-| Cloud inference | API via env var | Reasoning-heavy or quality-sensitive |
-| Packaging | Docker Compose, one file per project | |
-| Access | Tailscale | Never `0.0.0.0` |
-
-**Open question, deliberately unresolved:** Next.js vs a no-build-chain
-stack (FastAPI + HTMX). Next.js one-shots better because models know it
-cold. HTMX is lower-maintenance and has no `node_modules`. Build one UI
-each way before deciding, and note which was used in each project's
-README.
-
----
+- **A skipped step doesn't gate.** A missing doc only counts as the next step
+  when no later doc exists. Gaps are listed under `skipped` in `--json`.
+  `DESIGN.md` from the old pipeline is listed in `docs` but isn't a step.
+- **`[ASSUMED]` gates the plan.** Unruled items stop a project at the spec
+  stage until there's a PLAN.md; after that they're a warning.
+- **Built means every FR in SPEC.md is ticked.** PLAN.md's ticks decide it
+  only when the spec has no FRs. Built is done; a missing README is a warning.
+- **Deployed** is any of: a compose file, a systemd unit or crontab line that
+  runs something from the project's folder, or a workflow publishing GitHub
+  Pages.
+- **Quick projects** have no pipeline docs, just code and maybe a README. Their
+  to-do list is a checklist under `## To do` in README.md. One is **done** when
+  every item is ticked (or there's no list), it's deployed, and git is clean
+  and pushed.
 
 ## Project layout
 
 ```
-~/projects/<app-name>/
-  README.md              what this is, in three sentences
-  CLAUDE.md              project rules and hard constraints
-  EXPLORE.md             external claims checked against reality; open bets
-  SPEC.md                the contract — requirements + verification gates
-  PLAN.md                written by Claude Code in Plan Mode, reviewed by me
-  DESIGN.md              options considered, choice made, and why
-  docker-compose.yml
+~/projects/<app>/
+  README.md        what it is, how to run it, where data lives, what to back up
+  CLAUDE.md        project rules and hard constraints
+  BRIEF.md  EXPLORE.md  SPEC.md  PLAN.md  BUILD-LOG.md   (ROADMAP.md, DISCOVERY.md)
+  compose.yml      from the platform's templates
   Dockerfile
-  .env.example           every config key, no secrets
-  .gitignore
-  src/
-  tests/
-  Makefile               make dev / make test / make check
+  ops/systemd/     timer + service, for a scheduled job
+  .env.example     every config key, no secrets
+  Makefile         make dev / make test / make check
+  src/  tests/  data/
 ```
 
-`make check` is the single command that proves the app is healthy — what
-the agent runs to verify itself, what a hook enforces, and what Uptime
-Kuma effectively asks in production.
+`make check` is the one command that proves the app is healthy — what the
+agent runs on itself and what the stop hook enforces.
 
 ---
 
 ## Phone vs desk
 
-**Phone** is for decisions: ideation, spec review, approving plans, running
-the slice loop on a stack the agent already knows well, kicking off long
-background work to check on later.
-
-**Desk** is for anything that genuinely needs eyes: large diffs, a stack
-being used for the first time, anything visual (UI, layout, rendered
-output), confusing debugging where state matters, or reviewing more than
-about 50 lines of code at once. Don't try to eyeball a real diff on a
-five-inch screen — it produces false confidence, not review.
-
----
+**Phone** for decisions: ideation, brief and spec review, answering `/plan`'s
+questions, reading phase reports, kicking off `/build` on a stack the agent
+knows well. **Desk** for anything that needs eyes: large diffs, a stack being
+used for the first time, anything visual, confusing debugging. Don't eyeball a
+real diff on a five-inch screen — it produces false confidence, not review.
 
 ## Model selection
 
-- **Opus in chat** for ideation, architecture decisions, and hard
-  debugging where reasoning quality matters more than speed.
-- **Sonnet in Claude Code** for most building — the slice loop, scaffolding,
-  routine implementation.
-- **Opus in Claude Code** when a slice has stalled twice and `/stuck`
-  hasn't resolved it — a bigger model for a genuinely hard problem, not a
-  first resort.
-- **Local Ollama** for bulk text — classification, extraction,
-  summarisation — never for code generation. An 8B local model writing
-  code is a false economy; the debugging time erases whatever was saved.
-
----
+- **Opus** for discovery, spec and plan, `/checkpoint`, and hard debugging —
+  where judgment matters more than speed.
+- **Sonnet** for `/build` on a settled plan — the plan carries the design.
+- **Opus for `/build`** when a phase has stalled twice and `/stuck` hasn't
+  resolved it.
+- **Local Ollama** for bulk text in apps — classification, extraction,
+  summarising — never for writing code.
 
 ## Emergency commands
 
 | Situation | Command |
 |---|---|
-| Agent going down a bad path mid-conversation | `/clear` |
-| Agent mid-action, need to interrupt now | `Ctrl+C` |
+| Agent going down a bad path | `/clear` |
+| Agent mid-action, interrupt now | `Ctrl+C` |
 | Last commit was wrong | `git reset --hard HEAD~1` |
-| Check what the last commit actually changed | `git diff HEAD~1` |
+| What did the last commit change | `git diff HEAD~1` |
 | Container misbehaving | `docker compose logs --tail 50` |
 | Container needs a kick | `docker compose restart` |
-| Rebuild after a Dockerfile/dependency change | `docker compose up -d --build` |
+| Rebuild after a Dockerfile change | `docker compose up -d --build` |
+| Did a scheduled job fail | `systemctl --user list-timers`, then `journalctl --user -u <unit> -n 50` |
 | What's listening on a port | `ss -tlnp` |
-| Is Ollama actually using the GPU | `docker exec ollama ollama ps` |
+| Is Ollama using the GPU | `docker exec ollama ollama ps` |
 | Switch models mid-session | `/model` |
 
 ---
 
 ## What helps and what breaks one-shotting
 
-**Helps:** a spec with tagged provenance, verification gates that are
-commands rather than adjectives, one unknown per slice, faking the hard
-integration first, stopping at two failed attempts instead of thrashing, a
-scaffold that runs before any logic exists, and checking what external
-services actually do before designing around what they supposedly can't.
+**Helps:** questions asked before code, one unknown per task, an end-to-end
+path early, building on what already runs, verification gates that are
+commands, stopping at two failed attempts, and checking what external services
+actually do before designing around what they supposedly can't.
 
-**Breaks it:** vague requirements papered over with an agent's best guess,
-horizontal-layer builds with nothing runnable until the end, stacking a
-new API and a new library and a new pattern into one slice, treating a
-plan as sacred once written, accepting "should work now" instead of
-pasted command output, and letting a finding that invalidates the plan get
-recorded as a note instead of reordering the plan.
+**Breaks it:** a spec at the wrong weight, horizontal layers with nothing
+runnable until the end, stacking several unknowns in one task, treating a plan
+as sacred, accepting "should work now" instead of output, and recording a
+finding that invalidates the plan as a note instead of reordering the plan.
 
 ---
 
-## Worked example: bin collection reminder
+## Worked example: the phantom household
 
-Discovery: a Telegram message the night before bin collection. Brief:
-done means a message arrives by 8pm the night before, only for the bins
-actually due, no web UI needed. Design: single shape — no genuinely
-distinct alternative, a cron-triggered script beats anything more
-elaborate for this scope.
-
-`/audit`, run cold on `SPEC.md` alone, flagged a constraint that wasn't
-actually in the brief: "must handle multiple households." It had crept in
-from a single passing line in the brief — "my partner should get it too" —
-which the contract step had generalised into multi-household support
-nobody asked for. Struck in two minutes once flagged. Left unstruck, it
-would have meant a household data model, a settings UI, and per-household
-scheduling logic for a feature that needed exactly one Telegram chat ID in
-an environment variable — hours of build time for a capability nothing in
-the brief required. This is the audit step earning its place in the
-workflow: catching a phantom requirement while it's still a sentence to
-delete, not a schema to unwind.
-
----
+Bin collection reminder: a Telegram message the night before bin day. A
+review of the spec found "must handle multiple households" — not in the
+brief. It had grown out of one passing line, "my partner should get it too",
+into a household data model, a settings screen and per-household scheduling,
+for a feature that needed one more chat ID in an environment variable. Struck
+in two minutes while it was still a sentence. This is what the `[ASSUMED]`
+mark exists for: anything I didn't say is visible, and I rule on it before the
+plan.
 
 ## Worked example: the nag that didn't need building
 
-`DESIGN.md` for the task-extractor build stated, as fact: "no task app on any
-tier does repeat-until-done nagging." It was load-bearing — it justified
-rejecting an entire architecture, and committed the build to its own
-scheduler, its own notification channel, and local state to drive them.
-
-It's false. Recurring reminders are a standard feature of the product
-category; ClickUp does them on the free plan. The claim came from model
-recall, was never checked against a single features page, and survived
-`/brief`, `/design`, and into `/contract` before a passing remark in
-conversation happened to overturn it. Nothing in the process was looking.
-
-Caught, it removed a subsystem. Uncaught, it would have been days of work to
-rebuild something already sitting behind a checkbox in an app the build was
-already integrating with. Note the shape: the expensive error wasn't picking
-the wrong option, it was inventing work to route around a limitation that
-never existed. That's what Phase 1.5 exists to catch, and why it hands the
-checking to a human with a link rather than answering from training data —
-the same recall that produced the claim can't be what audits it.
-
----
-
-## Phase summary
-
-| Phase | Command(s) | Output |
-|---|---|---|
-| 0 Setup (once per machine) | plugin install | Spec-driven plugin, standing rules in place |
-| 0.5 Discovery | `/discovery`, `/roadmap` | `DISCOVERY.md`, `ROADMAP.md` (optional) |
-| 1 Brief | `/brief` | `BRIEF.md` |
-| 1.5 Explore | `/explore` | `EXPLORE.md` — what the candidate tools actually do, checked against reality |
-| 1.75 Design | `/design` | `DESIGN.md` |
-| 2 Contract | `/contract` | `CLAUDE.md`, `SPEC.md` |
-| 2.5 Audit | `/audit` (fresh session) | Resolved `[ASSUMED]` tags |
-| 3 Plan | `claude --permission-mode plan`, `/plan` | `PLAN.md` |
-| 4 Build | scaffold, then `/slice` (repeat), `/checkpoint` (fresh session) at each phase end, `/stuck` if blocked | Working, verified, committed code |
-| 5 Deploy | `/deploy` | Running container, bound for its shape |
-| 6 Operate | `/complete` (same session) | Docs matching reality, README, backups, kill criteria |
-
-### Skipped steps and quick projects
-
-Not everything goes through every phase, and `bin/build-state` doesn't insist
-that it does:
-
-- **A skipped step doesn't gate.** A missing doc only counts as the next step
-  when no later doc exists. A project that went from EXPLORE straight to SPEC is
-  judged by its SPEC and PLAN, and the gap is listed under `skipped` in `--json`.
-- **Built means every FR in SPEC.md is ticked.** PLAN.md's ticks only decide it
-  when the spec has no FRs. If the plan's ticks lag behind the spec, that's a
-  warning, not a reason to stay in the build loop. Leftover `[ASSUMED]` tags in
-  a built project are a warning too: too late to keep them out of the plan, but
-  still decisions nobody made.
-- **Deployed** is any of: a compose file; a systemd unit (system or user) that
-  runs something from the project's folder; a crontab line that does; or a
-  workflow that publishes GitHub Pages. Built plus a README is done even with
-  none of those, since not everything needs deploying.
-- **Quick projects** have no pipeline docs at all (no BRIEF … PLAN, DISCOVERY
-  or ROADMAP), just code and maybe a README. Their to-do list is a checklist
-  under `## To do` in README.md. One is **done** when every item is ticked (or
-  there's no list), it's deployed as above, and git is clean and pushed. Any of
-  those coming undone puts it back in progress.
+`DESIGN.md` for the task-extractor stated as fact: "no task app on any tier
+does repeat-until-done nagging." It justified rejecting an architecture and
+committed the build to its own scheduler, notification channel and state. It
+was false — recurring reminders are standard; ClickUp does them free. The
+claim came from model recall, survived three steps, and was overturned by a
+passing remark. Caught, it removed a subsystem. That's why `/explore` comes
+before any design and checks instead of recalling.
 
 ---
 

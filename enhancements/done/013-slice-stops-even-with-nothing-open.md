@@ -1,6 +1,6 @@
 # Enhancement: `/slice` stops for approval even when nothing is open
 
-**Status: OPEN** (revises the "always stop" decision recorded in `007`)
+**Status: DONE** (2026-10-11, via `015`) — `/slice` replaced by `build.md`, which runs a whole phase and stops only at `⏸ STOP` tasks or for the named hazards. `verify-before-stop.sh` keys on `/build` and fires when code lands in the same turn (tested 2026-10-11).
 
 ## Where this came from
 

@@ -1,6 +1,6 @@
 # Enhancement: The required failing placeholder test blocks the slice that creates it
 
-**Status: OPEN**
+**Status: DONE** (2026-10-11, via `015`) — `plan.md` folds the scaffold into the first real task and no longer asks for a placeholder test that stays failing.
 
 ## Where this came from
 

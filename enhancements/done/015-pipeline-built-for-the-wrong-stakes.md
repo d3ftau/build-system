@@ -1,6 +1,6 @@
 # Enhancement: The pipeline is built for shipping to strangers, and doesn't know shared infrastructure exists
 
-**Status: OPEN**
+**Status: DONE** (2026-10-11) — commands rewritten (build-system `6838696`), build-state and stop hook updated, cclauncher follows (`7a9efc2`), platform built (`~/projects/platform`, `dd2b7fb`), playbook rewritten, superpowers uninstalled, autopantry's local Supabase stopped. Remaining migrations of existing apps onto the platform are tracked in `~/projects/platform/README.md` under To do.
 
 ## Where this came from
 
@@ -146,4 +146,15 @@ branch finishing, a subagent per task, brainstorming's heavier-path ratchet.
 
 ## Still open
 
-- Every item above.
+Nothing in build-system. Moving existing apps onto the platform (usecasebot's
+own failure unit, fashion-bot's own Chrome layer) is tracked in
+`~/projects/platform/README.md` under To do.
+
+## Corrections found while landing it
+
+- PLATFORM.md's first draft said containers reach Ollama via
+  `host.docker.internal`. Tested: they can't — Ollama isn't bound to the Docker
+  bridge. Fixed with a shared `platform` Docker network (`http://ollama:11434`).
+- cclauncher already flagged failed timer runs and down containers, so the
+  "failure visibility through cclauncher" item needed a convention (schedule
+  with systemd timers), not new code.

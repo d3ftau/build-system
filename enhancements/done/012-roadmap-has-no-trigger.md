@@ -1,6 +1,6 @@
 # Enhancement: `/roadmap` has no real trigger, so scope cut by `/brief` has no home
 
-**Status: OPEN**
+**Status: DONE** (2026-10-11, via `015`) — `/roadmap` merged into `brief.md`: the brief's Later list writes or updates ROADMAP.md, so the cut is where the roadmap gets written. `bin/build-state` needed no flag, since the trigger now sits in the step that makes the cut.
 
 ## Where this came from
 
