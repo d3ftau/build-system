@@ -2,11 +2,8 @@
 
 Things to do later. Not a plan; strike freely.
 
-## Token-saving setup (caveman, ponytail, lean-ctx, batching, shell timeout)
-Researched 2026-10-05 from Reddit tips, checked against each project's own repo.
-Not started. Nothing has been installed. Changes global Claude config
-(`~/.claude`), plus one new hook in `hooks/` here. Every step is its own commit
-so any one tip can be undone alone.
-Full plan: [backlog/token-saving-setup.md](backlog/token-saving-setup.md)
-Open question: ponytail's level (plan leaves it at the default, full) against the
-plain-language preference.
+## Token-saving setup (ponytail, lean-ctx, batching, shell timeout)
+caveman dropped. ponytail installed 2026-10-15. lean-ctx tried and fully rolled back:
+v3.11.4 sets itself up during npm install, gates shell commands, blocks Grep/Glob, and
+has telemetry on. Shell timeout and batching not started.
+Full notes and a safer lean-ctx retry recipe: [backlog/token-saving-setup.md](backlog/token-saving-setup.md)
