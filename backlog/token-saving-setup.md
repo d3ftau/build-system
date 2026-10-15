@@ -4,6 +4,30 @@
 - **caveman: dropped.** Removed from the plan, along with the caveman-pause hook.
 - **ponytail: done.** v5.2.0 installed as a plugin, default level full, commit `8d855ba` in `~/.claude`.
   Checked that a new session reports it active, and that disable and re-enable both work.
+- **Where the tokens go (measured 2026-10-15, `bin/token-audit.py`, last 14 days, ~$478 API-equivalent):**
+  - **A few marathon sessions dominate.** 9 sessions that peaked above 300k of context are 77% of usage.
+    27 small sessions are 3%. Auto-compact defaults to about 967K on 1M-window models (model-config docs),
+    so sessions almost never compact.
+  - **Cost by token type:** cache writes 44%, cache reads 38%, output 18%.
+  - **Opus 5.5 is 87% of spend**, despite `opusplan`. 23 of 53 sessions never touched Sonnet. The cause is not found.
+    Sonnet 5.5 is exactly half the price of Opus 5.5 in every column.
+  - **Calls after >1h idle are 23% of spend** (cache rebuilds). Almost all cache writes use the 1-hour TTL, so the
+    Reddit "5-minute cache" story doesn't apply here.
+  - **Shell output is small.** Bash results are about 6% of everything written to cache, so even a perfect
+    shell-output compressor (lean-ctx, rtk) is worth about 3-4% at most.
+- **What would save at least 15%, replayed on real history** (baseline replay matched actual spend):
+
+  | Change | Saving | Notes |
+  |---|---|---|
+  | Compact at 150k (`autoCompactWindow`) | 28% | 23% with 50k re-read per compaction, 18% with 100k |
+  | Move 25% of Opus work to Sonnet | 11% | 50% of it: 22%. Quality cost not measured |
+  | Fresh start after >1h idle | 29% | Fragile: ~0% if each fresh start needs 100k of re-reading |
+  | All three (50k re-read) | 28% | Fresh start and compaction overlap |
+
+  Open: why sessions stay on Opus under `opusplan`. Not yet changed: `autoCompactWindow` in settings.json.
+- **Recommendation changed: don't install lean-ctx.** Independent tests (JetBrains, 80+ paired tasks per tool) found
+  caveman -8.5% output tokens and rtk +7.6% cost; ponytail -10.3% cost (the only significant saver). The block below
+  is kept only in case that changes.
 - **lean-ctx: tried, removed.** v3.11.4 behaves very differently from what this plan
   assumed (see below). Every change was rolled back the same day. Not installed now.
 - **Batching, shell timeout: not started** (weren't part of this round).
