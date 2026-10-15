@@ -24,7 +24,12 @@
   | Fresh start after >1h idle | 29% | Fragile: ~0% if each fresh start needs 100k of re-reading |
   | All three (50k re-read) | 28% | Fresh start and compaction overlap |
 
-  Open: why sessions stay on Opus under `opusplan`. Not yet changed: `autoCompactWindow` in settings.json.
+  **Update:** the Opus pinning is deliberate. Greg found Sonnet looped and wrote bad code, which wasted tokens, so the
+  Sonnet row is withdrawn. Re-orientation after real compactions was measured on 20 compactions: median +6k tokens of
+  extra tool output in the next 25 calls, max 30k. That makes the 0-25k columns the realistic ones.
+  Compaction threshold (14-day replay, 25k re-read): 300k 16%, 250k 18%, 200k 23%, 150k 25%, 120k 26%, 100k 24%.
+  Real compactions today: 20 (13 manual at 250-680k, 7 auto at 215-320k), each shrinking to 15-20k.
+  Not yet changed: `autoCompactWindow` in settings.json.
 - **Recommendation changed: don't install lean-ctx.** Independent tests (JetBrains, 80+ paired tasks per tool) found
   caveman -8.5% output tokens and rtk +7.6% cost; ponytail -10.3% cost (the only significant saver). The block below
   is kept only in case that changes.
