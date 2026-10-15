@@ -39,17 +39,86 @@ In fact:
   - It added `claude`/`codex`/`gemini` aliases to `.bashrc`/`.zshrc` and created `~/.bashenv`.
   - It registered an MCP server and started a background daemon.
 - **Telemetry is on by default.** The install banner says so. The earlier research said it was off.
-  It had sent nothing yet ("Last sent: never").
+  It **did send** one batch at 00:29:41 to `api.leanctx.com`, about a minute after install. The batch held
+  an anonymous install ID, the version and OS, and usage counters. An earlier "Last sent: never"
+  reading came before that send.
 - Within a minute, its package folder disappeared (cause unknown, not me). Its hooks were left
   pointing at a missing binary, so it was rolled back.
 
-### If retrying lean-ctx
-- Install with `LEAN_CTX_NO_ONBOARD=1 npm install -g lean-ctx-bin`.
-- Run `lean-ctx telemetry off`.
-- Then pick a lighter mode explicitly. `lean-ctx init --agent claude --mode mcp --no-shell-hook`
-  sounds like MCP tools only, with no command gating.
-- Check what that mode changes against the snapshot before keeping it. It's untested.
-- Decide whether its "solution efficiency" block should go, since ponytail covers that.
+### Sandbox findings (2026-10-15, lean-ctx 3.11.4, nothing installed for real)
+Tested with the release binary in a fake home folder and in `claude -p` runs pointed at sandbox folders.
+- **`init` and `onboard` can't be used safely.** Every `init --agent claude` variant, including
+  `--mode mcp --no-shell-hook`, installs:
+  - the command-rewrite hook and the file-read redirect hook
+  - "observe" hooks on every event
+  - a status line, a skill, and a CLAUDE.md block (the CLAUDE.md block still says "Replace Mode")
+  - MCP tools set to `alwaysLoad` with 59 tools auto-approved
+
+  Run inside a repo, `init` also writes `AGENTS.md`, `LEAN-CTX.md`, `.claude/settings.local.json` and
+  `hooks/lean-ctx-*` into that repo. `--mode` only changes whether Grep/Glob are denied.
+- **Its rewrite hook answers "allow" for every command.** Per code.claude.com/docs/en/hooks (PreToolUse),
+  "allow" skips the permission prompt. A block still wins ("deny > defer > ask > allow"), so git-guard keeps working.
+- **A rewrite without "allow" keeps permissions intact.** Tested: a hook that only returned
+  `updatedInput` was applied, and a rewrite to `touch` was denied by the normal permission check.
+- **Three default blocks would break real work.** Both are off switches in `config.toml`:
+  - The command allowlist blocks `docker` (exit 126) and `systemctl`. Off: `shell_security = "off"`.
+  - The path jail blocks paths outside the project and outside home, and blocks home dot-folders such
+    as `~/.config`. Off: `path_jail = false`.
+- **Compression needs `LEAN_CTX_AGENT=1`.** Without it, output passes through unchanged.
+  - `git log --stat -10`: 9182 → 874 bytes
+  - `git log -20`: 13841 → 1551 bytes
+  - `ls -la /usr/bin`: 110745 → 37183 bytes
+  - `docker ps` and `git diff`: unchanged
+
+  When it compresses, the full output is kept for 24h in a "tee" log file.
+- **Correctness checks passed:**
+  - exit codes and error output are preserved
+  - the working folder carries over between commands
+  - heredocs and quoting pass through intact
+  - redirects, pipes, `tee` and `$(…)` get the exact original bytes; only what Claude reads is compressed
+- **Side effects:**
+  - It starts a background daemon on demand. Its pid and socket always go in `~/.local/share/lean-ctx`.
+  - Some output is reformatted: `head` gets line numbers and a header.
+  - Shell permission prompts show `lean-ctx -c '…'`, so allow-rules like `Bash(git status:*)` stop
+    matching. There are none in settings.json today.
+
+### Recommended install (tested in the sandbox, not yet done for real)
+Shell-output compression only. No `npm`, `init`, `onboard`, MCP server, read redirect, CLAUDE.md block,
+status line or shell aliases.
+1. Download the binary with `gh release download v3.11.4 -R yvgude/lean-ctx` and check it against
+   `SHA256SUMS`. Install it to `~/.local/bin/lean-ctx`. Keep this as a pinned script in this repo.
+2. Create `~/.config/lean-ctx/config.toml` with `shell_security = "off"` and `path_jail = false`.
+   Then run `lean-ctx telemetry off`.
+3. In settings.json `env`, set `LEAN_CTX_AGENT=1`, `DO_NOT_TRACK=1`, `LEAN_CTX_TELEMETRY=off` and
+   `LEAN_CTX_NO_UPDATE_CHECK=1`.
+4. Add a new hook, `hooks/lean-ctx-compress.sh`, registered as PreToolUse/Bash after git-guard. It runs
+   `lean-ctx hook rewrite`, keeps only the rewritten command (and any deny), and drops the "allow".
+   If the binary is missing or fails, it does nothing and the command runs unchanged. The tested draft
+   is below.
+5. Undo, in order:
+   - Remove the hook entry and the env lines (`git revert`).
+   - Delete `~/.local/bin/lean-ctx`, `~/.config/lean-ctx`, `~/.local/share/lean-ctx` and `~/.local/state/lean-ctx`.
+   - Kill switch without reverting anything: delete the binary.
+
+Optional later: file-read compression through its MCP `ctx_read`. Only worth it after measuring
+the shell part. It would need the MCP server registered by hand, without `alwaysLoad` or auto-approve.
+
+```bash
+#!/bin/bash
+# PreToolUse(Bash): route commands through lean-ctx so their output comes back compressed,
+# while keeping Claude Code's normal permission checks.
+# lean-ctx's own hook answers "allow" for every command, which skips the permission prompt.
+# This keeps only its rewritten command (and any "deny"). If lean-ctx is missing or fails,
+# the command runs unchanged. Checked against lean-ctx 3.11.4.
+LC="${LEAN_CTX_BIN:-$HOME/.local/bin/lean-ctx}"
+[ -x "$LC" ] || exit 0
+out=$("$LC" hook rewrite 2>/dev/null) || exit 0
+[ -n "$out" ] || exit 0
+jq -c '.hookSpecificOutput // empty
+  | if .permissionDecision == "deny" then {hookSpecificOutput: .}
+    elif .updatedInput then {hookSpecificOutput: {hookEventName: "PreToolUse", updatedInput: .updatedInput}}
+    else empty end' <<<"$out" 2>/dev/null || exit 0
+```
 
 ## Remaining steps (not started)
 **Shell timeout.** In `~/.claude/settings.json` `env`:
