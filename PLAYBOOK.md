@@ -52,7 +52,7 @@ deterministic: scripts that fire on a lifecycle event and can't be talked out
 of running. Conventions go in `CLAUDE.md`; anything that must actually hold
 goes in a hook.
 
-Four hooks live in `hooks/`, symlinked to `~/.claude/hooks` and wired into
+Five hooks and a status line live in `hooks/`, symlinked to `~/.claude/hooks` and wired into
 `~/.claude/settings.json` for every project:
 
 - `git-guard.sh` (`PreToolUse`, `Bash`) — blocks commits that bypass hooks or
@@ -68,6 +68,11 @@ Four hooks live in `hooks/`, symlinked to `~/.claude/hooks` and wired into
   output if it fails. Failures matching a line in the project's
   `.claude/known-failing-checks` are let through; that file is mine, never the
   agent's.
+- `context-warn.sh` (`Stop`) — warns, never blocks, when context passes 200k tokens
+  (override with `CTX_WARN_TOKENS`) and again at each further +100k, so compacting
+  is chosen at a natural break rather than mid-task. Re-arms after `/compact`.
+  `statusline.sh` shows the same number in the status line, red past the threshold.
+  Why 200k: `bin/token-audit.py` found a few sessions with very large contexts account for most usage.
 
 **Never accept "it works" as evidence.** Demand the actual command output. The
 failure mode isn't the agent lying — it's the agent believing itself.

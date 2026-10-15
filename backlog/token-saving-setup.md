@@ -29,7 +29,9 @@
   extra tool output in the next 25 calls, max 30k. That makes the 0-25k columns the realistic ones.
   Compaction threshold (14-day replay, 25k re-read): 300k 16%, 250k 18%, 200k 23%, 150k 25%, 120k 26%, 100k 24%.
   Real compactions today: 20 (13 manual at 250-680k, 7 auto at 215-320k), each shrinking to 15-20k.
-  Not yet changed: `autoCompactWindow` in settings.json.
+  **Done 2026-10-15:** Greg chose a warning over auto-compaction (compacting mid-task can lose needed context).
+  `hooks/context-warn.sh` (Stop) warns at 200k, then every +100k; `hooks/statusline.sh` shows context size.
+  `autoCompactWindow` deliberately not set. Auto-compaction can still fire first: it fired at 215-321k in the 14-day logs.
 - **Recommendation changed: don't install lean-ctx.** Independent tests (JetBrains, 80+ paired tasks per tool) found
   caveman -8.5% output tokens and rtk +7.6% cost; ponytail -10.3% cost (the only significant saver). The block below
   is kept only in case that changes.
