@@ -43,10 +43,14 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [013](done/013-slice-stops-even-with-nothing-open.md) | `/slice` stops for approval even when its checkpoint says "nothing open" | **DONE** | `build.md`, `hooks/verify-before-stop.sh` (via `015`) | 2026-10-11 |
 | [014](done/014-failing-placeholder-blocks-its-own-slice.md) | The required failing placeholder test blocks the slice that creates it; the allowlist that fixes it is only in PLAYBOOK prose | **DONE** | `plan.md` (via `015`) | 2026-10-11 |
 | [015](done/015-pipeline-built-for-the-wrong-stakes.md) | The pipeline is built for shipping to strangers and doesn't know shared infrastructure exists | **DONE** | every command, `bin/build-state`, `hooks/verify-before-stop.sh`, `~/projects/platform`, cclauncher | 2026-10-11 |
+| [016](open/016-first-end-to-end-run-skips-known-prep.md) | The first end-to-end run is ordered ahead of prep the spec already says it needs; user actions known at /plan become mid-build stops | OPEN | `plan.md` (not yet) | — |
 
 ## Open items in detail
 
-None. `011`–`014` closed with `015` on 2026-10-11.
+- `016`: `/plan` orders the first hands-on run before cheap, independent prep
+  that the spec already says the real path needs (autopantry build 2 stage 2:
+  the library's Qwen matching came after the first device list, which took
+  ~10 min cold).
 
 ## Common thread
 
