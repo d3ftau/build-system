@@ -1,6 +1,9 @@
 # Enhancement: the pipeline can grow a build's scope but never shrink it
 
-**Status: OPEN** — not implemented. Diagnosed 2026-07-26, no command changed yet.
+**Status: DONE** — diagnosed 2026-07-26, fixed in `9b0d2dd`/`d381b32` (2026-07-26/27).
+`/brief` always asks the smallest-version question (`commands/brief.md`), and
+since `015` (2026-10-11) `/roadmap` is part of `/brief` and agent-argued
+requirements carry the `[ASSUMED]` mark (`commands/spec.md`).
 
 ## Where this came from
 
