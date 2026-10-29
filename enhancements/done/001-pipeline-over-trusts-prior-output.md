@@ -1,10 +1,12 @@
 # Enhancement: the pipeline over-trusts its own earlier output
 
-**Status: OPEN** — not implemented. Verified 2026-07-26: `commands/audit.md` is
-unchanged since the initial commit (`333c972`) and still carries the
-traceability-as-correctness instruction this file flags. `[STATED]` in
-`commands/contract.md` has not been split. See "Implementation status" at the
-end for what landed nearby and why it doesn't cover this.
+**Status: DONE** — fixed 2026-07-26/27 in `contract.md` and `audit.md`
+(`9b0d2dd` split `[AGREED]` from `[STATED]`; `d381b32`). Both files are gone
+since `015` (2026-10-11): `/design` + `/contract` became `/spec`, `/audit` was
+replaced by the end of `/spec`, and this fix survives as the single
+`[ASSUMED]` mark (`commands/spec.md`) and the ruling on it (`bin/build-state`
+warns on any left unruled). The "Implementation status (checked 2026-07-26)"
+section below is the state before the fix.
 
 ## Where this came from
 
