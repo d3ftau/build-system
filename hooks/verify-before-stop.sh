@@ -55,8 +55,9 @@ if [ "$status" -ne 0 ]; then
   # A project can declare known-intentionally-failing checks (e.g. the
   # scaffold's placeholder test, which proves the gate itself runs). This
   # never touches the test — it only tells this gate the red is expected.
-  # The list is mine to edit, not the agent's: no-skipped-tests.sh blocks
-  # agent writes to it, or it would be a skip marker with extra steps.
+  # The list is mine to edit, not the agent's: no-skipped-tests.sh (Edit/Write)
+  # and git-guard.sh (Bash) block agent writes to it, or it would be a skip
+  # marker with extra steps.
   allowlist="$cwd/.claude/known-failing-checks"
   if [ -f "$allowlist" ]; then
     failure_lines=$(printf '%s\n' "$output" | grep -E 'FAIL|✗|×|AssertionError|Error:')

@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# PreToolUse hook (matcher: Bash). Enforces two PLAYBOOK.md standing rules:
-# hooks/signing must never be bypassed, and secret-like files must never be committed.
+# PreToolUse hook (matcher: Bash). Enforces three PLAYBOOK.md standing rules:
+# hooks/signing must never be bypassed, secret-like files must never be committed,
+# and the agent never writes .claude/known-failing-checks (no-skipped-tests.sh
+# only sees Edit/Write, so `echo x >> .claude/known-failing-checks` needs this).
 
 input=$(cat)
 command=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
 cwd=$(printf '%s' "$input" | jq -r '.cwd // empty')
 
 case "$command" in
+  *known-failing-checks*)
+    echo "Blocked: .claude/known-failing-checks tells verify-before-stop.sh which failures to ignore. Only the user edits it — adding to it is skipping a test by another route. Read it with the Read tool if you need to; fix the failure or tell the user why it should be expected." >&2
+    exit 2 ;;
   *"git commit"*) ;;
   *) exit 0 ;;
 esac

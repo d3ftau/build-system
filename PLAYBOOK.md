@@ -56,7 +56,8 @@ Five hooks and a status line live in `hooks/`, symlinked to `~/.claude/hooks` an
 `~/.claude/settings.json` for every project:
 
 - `git-guard.sh` (`PreToolUse`, `Bash`) — blocks commits that bypass hooks or
-  signing, and commits of anything that looks like a secret.
+  signing, commits of anything that looks like a secret, and any command that
+  names `.claude/known-failing-checks` (the Bash route to editing it).
 - `no-skipped-tests.sh` (`PostToolUse`, `Edit|Write`) — blocks an edit that
   adds a skip/xfail/disable marker to a test, and blocks the agent editing
   `.claude/known-failing-checks`.
