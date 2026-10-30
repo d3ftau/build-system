@@ -1,6 +1,6 @@
 # Enhancement: claims are accepted without checking they are the kind of claim that can be true
 
-**Status: DONE** — all four candidate fixes in `commands/slice.md`; general form in `~/.claude/CLAUDE.md`.
+**Status: DONE** — all four candidate fixes landed in `commands/slice.md` (2026-10-01); since `015` (2026-10-11) they live in `commands/build.md`, "Each task"; general form in `~/.claude/CLAUDE.md`. `slice.md`, `design.md` and `contract.md`, named below, no longer exist.
 
 ## Where this came from
 
