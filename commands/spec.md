@@ -11,6 +11,14 @@ earn its place by changing what gets built. No invented thresholds, retry
 schedules or failure catalogues. If a one-build app comes out past about a
 dozen FRs, say why at the top of SPEC.md.
 
+**A step I do by hand is cheap; automation of it is not.** Before an FR
+automates something I could do myself, name the manual step it replaces and
+how often it happens. A line I paste once costs me 30 seconds; the code that
+replaces it costs build time, a test, and upkeep, and often a new secret or
+permission. Write the manual step into the spec instead, unless it repeats
+often or BRIEF.md names it as a must. Mark any automation of a rare manual
+step `[ASSUMED]`, with what it costs.
+
 ## 1. Pick the shape
 
 Using EXPLORE.md's findings, not recall: are there genuinely different ways to

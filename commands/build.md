@@ -45,6 +45,12 @@ Only these stop you:
   tell me what you expected, what happened, and what you think the root cause
   is — the same as /stuck.
 - **A plan so wrong that every way forward is a guess.**
+- **Machinery the plan didn't name, to keep a goal alive.** A new key, secret,
+  permission, sudo rule, mode, guard, rehearsal rig or cross-machine link
+  that the plan never listed. Stop and ask whether the goal is still worth
+  it. Name the manual step the machinery would save and how often, and
+  offer "drop it: you do that step by hand" as an option. This is never a
+  ruling: rulings make things work, they don't decide what's worth building.
 
 ## Rulings, not stalls
 
@@ -54,6 +60,11 @@ each decision in `BUILD-LOG.md` in the project root as it's made:
 `T4: Ruling: <what you decided> — <why> — <what it costs if wrong>`
 
 Deviating from the plan without a logged ruling is a decision made in secret.
+
+When you ask me to choose, recommend the smallest option that does the job,
+and always include "don't have this at all" when the choice is about adding
+a mechanism. The most thorough option isn't the safe default; it's the
+expensive one.
 
 If a ruling **changes what I get or see** — a question /plan should have asked
 and didn't — take the choice that's easiest to undo and log it as

@@ -25,6 +25,14 @@ Leave off anything technical with a sensible default — library choice, file
 layout, config names, lint rules. /build decides those and reports them; you
 don't ask about them and don't list them.
 
+**Then price the automation.** Sketch the smallest plan that meets only what
+I said I need, with my manual steps left as manual (a command I paste, a
+button I press). For each piece of automation beyond that, give one line: the
+step of mine it removes, how often, and what it adds: tasks, secrets,
+permissions, modes, rehearsals. Recommend keeping it only if it repeats
+often or is a must. Show me both sizes; I choose. "Replaces one pasted line
+at the cutover" loses to almost anything.
+
 ## 2. Write PLAN.md
 
 First line: `# PLAN — <build name from BRIEF.md>`.

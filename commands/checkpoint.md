@@ -42,12 +42,22 @@ for me, not on production polish.
    still rest on decisions that hold? Check CLAUDE.md's hard rules for
    anything added mid-build by the agent rather than by me.
 
-6. **Can a person use what exists?** Re-run PLAN.md's human surface table
+6. **What would you cut?** Re-derive, from scratch, the smallest version of
+   everything not yet built that still meets what I said I need, with my
+   manual steps left manual. Compare it with the plan's remaining tasks: list
+   each task or mechanism the smallest version doesn't need, with the manual
+   step it saves me and what it costs to build and keep. If the plan is
+   noticeably bigger, the verdict is **re-plan**, not proceed with trims.
+   If I've asked whether this is over-engineered, this step is the answer:
+   start from the smallest version, not from the plan, and say plainly what
+   was over-built and since when, before saying what to keep.
+
+7. **Can a person use what exists?** Re-run PLAN.md's human surface table
    against the code as it is now. If this phase was meant to end deployed,
    check it's running, comes back after a restart, and that a failed run
    would reach me.
 
-Report only. Don't fix code or edit PLAN.md. Rank findings by consequence and
+Report only. Order your recommendation smallest-first. Don't fix code or edit PLAN.md. Rank findings by consequence and
 end with one of: **proceed**, **fix first** (what), or **re-plan** (which
 tasks). When I've decided, tick the `/checkpoint` line and write my decision
 under it in one line.

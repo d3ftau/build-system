@@ -25,6 +25,16 @@ Ask it concretely: if you got only the first stage of this and nothing
 downstream, is that worth having? Push once if the answer sounds like the
 whole pipeline. Write down what I say even where it contradicts ROADMAP.md.
 
+**The smallest version includes the steps I'd do by hand.** Ask which steps
+I'm happy to do myself: paste a command, tap a button, wait for a message. A
+step I'd do once or rarely is not something to automate unless I say so.
+
+**"Done" and "Never" hold only what I said I need.** Anything DISCOVERY.md
+marks nice-to-have goes under **Later**, or into "Done" as "nice if cheap",
+never as the definition of done. "No hands", "fully automatic" and
+"unattended" are expensive words: write them only if I used them about this
+build, and then ask once what a single manual step would cost me.
+
 **A second question is always asked: who looks at this, and what should using
 it feel like?** Every screen, message or notification a person sees, and the
 look of it. If nobody asks, the first screen built becomes the design by

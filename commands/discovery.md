@@ -50,6 +50,11 @@ two sentences earlier, launders an argument into a requirement nobody can
 question three documents later. Nothing downstream recovers the difference if
 you lose it here.
 
+**Record how strongly each one is wanted, too: must, or nice-to-have.** "Is it
+possible to script this?" is a question, not a requirement. Write it down as a
+nice-to-have unless I said I need it. A nice-to-have recorded as a must is how
+a 30-second manual step turns into a week of automation (`017`).
+
 Two things to write down rather than smooth over:
 
 - **Where I pushed back and the conclusion survived anyway.** That's weakly
