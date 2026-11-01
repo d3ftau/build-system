@@ -175,29 +175,35 @@ Not prescriptive.
   offer "don't have this feature", and recommend the smallest option unless
   there's a stated reason not to.
 
-## Fix written (2026-11-01, same session)
+## Fix written (2026-11-01, same session; revised the same day)
 
-One rule, applied at every stage: **a manual step is cheap; automating it
-must beat it.** Greg pasting a line once is the bar.
+The first fix (`323bf3d`) swung too far: "a manual step is cheap; automating
+it must beat it", spread across seven commands. Greg:
 
-- `discovery.md`: each requirement records its strength, must or
-  nice-to-have, beside who raised it.
-- `brief.md`: the smallest version includes Greg's manual steps; "Done" and
-  "Never" hold only musts; "no hands" and the like only if he said them.
-- `spec.md`: an FR automating a manual step names the step and how often it
-  happens; rare ones stay manual or are tagged `[ASSUMED]` with their cost.
-- `plan.md`: step 1 sketches the smallest plan with manual steps left manual,
-  prices each automation, and Greg picks the size.
-- `build.md`: a new stop for machinery the plan didn't name (a key, a
-  permission, a mode, a guard, a rehearsal rig), with "drop it, do it by
-  hand" offered. Recommendations are the smallest option, and "don't have
-  this" is always offered.
-- `checkpoint.md`: a new step, "What would you cut?": re-derive the smallest
-  remaining plan from scratch. If it's noticeably smaller, the verdict is
-  re-plan. It's also the answer to "is this over-engineered?", which starts
-  from the smallest version and says plainly what was over-built.
-- `oneshot.md`: manual steps listed in the design, kept manual by default.
+> *"you have swung too far the other way. If automating a rare and simple
+> manual step only takes a line or two of code itself that is fine. The
+> question is about effort vs time saved. Automation is the goal here but
+> spending more time automating than would be saved in a lifetime of
+> automations is a poor return on effort, even worse if it is creating new
+> sets of problems which in turn need more effort to solve."*
 
-Still open: seeing it work in a real /plan, /build and /checkpoint. Whether
-the challenge-response rule belongs in `~/.claude/CLAUDE.md` too, since it
-applies outside builds, is Greg's call (proposed, not applied).
+So the rule is a return test, not a bias toward manual: **the effort to build
+and keep a piece of automation, plus the problems it creates, against the
+time it saves over its whole life.** Cheap automation is simply done.
+Brief, spec, build and oneshot are rolled back to before `323bf3d`.
+
+- `discovery.md` (kept from the first fix): each requirement records its
+  strength, must or nice-to-have, beside who raised it.
+- `plan.md`: before writing PLAN.md, weigh each piece of automation, effort
+  against time saved. Anything costing more than a task gets one line (step
+  removed, how often, what it adds). A nice-to-have whose cost outweighs its
+  saving goes to Greg as a question, not a task.
+- `checkpoint.md`: a new step 6, "Is it still worth it?", a challenge at every
+  checkpoint to what's built and what's to come. It flags effort outgrowing
+  the saving, and especially a chain of pieces that exist to fix problems
+  other pieces created. Such a chain under the remaining plan means re-plan.
+  It's also where "is this over-engineered?" gets answered.
+
+Still open: seeing it work in a real /plan and /checkpoint. Whether the
+challenge-response rule belongs in `~/.claude/CLAUDE.md` is Greg's call
+(proposed, not applied).

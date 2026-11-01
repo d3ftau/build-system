@@ -35,9 +35,6 @@ Short — a screen on my phone, not a document:
 - **What it does**, in two sentences.
 - **Constraints**, each marked **stated** (I said it) or **inferred** (you did),
   so I can strike the inferred ones.
-- **Manual steps kept manual**: what I'll do by hand (paste a line, press a
-  button). Automate one only if it repeats often or I asked. One line I paste
-  once beats any code that replaces it.
 - **Shape**: what it's built from, and which platform services it uses. Any
   stack beyond the platform gets one line on why. A model call names the fuzzy
   judgment that needs it; anything with enumerable rules is code.

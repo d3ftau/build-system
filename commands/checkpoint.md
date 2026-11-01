@@ -42,22 +42,25 @@ for me, not on production polish.
    still rest on decisions that hold? Check CLAUDE.md's hard rules for
    anything added mid-build by the agent rather than by me.
 
-6. **What would you cut?** Re-derive, from scratch, the smallest version of
-   everything not yet built that still meets what I said I need, with my
-   manual steps left manual. Compare it with the plan's remaining tasks: list
-   each task or mechanism the smallest version doesn't need, with the manual
-   step it saves me and what it costs to build and keep. If the plan is
-   noticeably bigger, the verdict is **re-plan**, not proceed with trims.
-   If I've asked whether this is over-engineered, this step is the answer:
-   start from the smallest version, not from the plan, and say plainly what
-   was over-built and since when, before saying what to keep.
+6. **Is it still worth it?** A continuous challenge to what has been built
+   and what is still to come, at every checkpoint. For each piece of
+   automation or machinery, built or planned, weigh the effort it has taken
+   and will take (building, testing, upkeep, and the new problems it brought
+   that needed solving in turn) against the time it saves me over its life:
+   the manual step's length times how often it happens. A line or two of code
+   that saves a step is fine, however rare the step. Flag where the effort
+   has outgrown the saving, and where a piece exists mainly to fix problems
+   another piece created: that chain is the warning sign. If the remaining
+   plan rests on such a chain, the verdict is **re-plan**, not proceed with
+   trims. If I've asked whether this is over-engineered, answer from this
+   step and say plainly what was over-built, before what to keep.
 
 7. **Can a person use what exists?** Re-run PLAN.md's human surface table
    against the code as it is now. If this phase was meant to end deployed,
    check it's running, comes back after a restart, and that a failed run
    would reach me.
 
-Report only. Order your recommendation smallest-first. Don't fix code or edit PLAN.md. Rank findings by consequence and
+Report only. Don't fix code or edit PLAN.md. Rank findings by consequence and
 end with one of: **proceed**, **fix first** (what), or **re-plan** (which
 tasks). When I've decided, tick the `/checkpoint` line and write my decision
 under it in one line.

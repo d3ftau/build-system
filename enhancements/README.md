@@ -44,7 +44,7 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [014](done/014-failing-placeholder-blocks-its-own-slice.md) | The required failing placeholder test blocks the slice that creates it; the allowlist that fixes it is only in PLAYBOOK prose | **DONE** | `plan.md` (via `015`) | 2026-10-11 |
 | [015](done/015-pipeline-built-for-the-wrong-stakes.md) | The pipeline is built for shipping to strangers and doesn't know shared infrastructure exists | **DONE** | every command, `bin/build-state`, `hooks/verify-before-stop.sh`, `~/projects/platform`, cclauncher | 2026-10-11 |
 | [016](open/016-first-end-to-end-run-skips-known-prep.md) | The first end-to-end run is ordered ahead of prep the spec already says it needs; user actions known at /plan become mid-build stops | OPEN | `plan.md` (not yet) | — |
-| [017](open/017-nice-to-have-becomes-the-spine.md) | A nice-to-have becomes the build's spine; every snag adds machinery instead of questioning the goal (Greg: "one of your biggest failures yet") | OPEN (fix written, unverified) | `discovery.md`, `brief.md`, `spec.md`, `plan.md`, `build.md`, `checkpoint.md`, `oneshot.md` | — |
+| [017](open/017-nice-to-have-becomes-the-spine.md) | A nice-to-have becomes the build's spine; every snag adds machinery instead of questioning the goal (Greg: "one of your biggest failures yet") | OPEN (fix written, unverified) | `discovery.md`, `plan.md`, `checkpoint.md` | — |
 
 ## Open items in detail
 

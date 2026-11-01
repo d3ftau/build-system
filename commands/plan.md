@@ -25,13 +25,18 @@ Leave off anything technical with a sensible default — library choice, file
 layout, config names, lint rules. /build decides those and reports them; you
 don't ask about them and don't list them.
 
-**Then price the automation.** Sketch the smallest plan that meets only what
-I said I need, with my manual steps left as manual (a command I paste, a
-button I press). For each piece of automation beyond that, give one line: the
-step of mine it removes, how often, and what it adds: tasks, secrets,
-permissions, modes, rehearsals. Recommend keeping it only if it repeats
-often or is a must. Show me both sizes; I choose. "Replaces one pasted line
-at the cutover" loses to almost anything.
+**Then weigh each piece of automation: effort against time saved.**
+Automation is the goal, and one that costs a line or two of code is simply
+done. The test is the return. On one side: the time to build it, test it and
+keep it working, plus any new problem it creates (a secret to carry, a
+permission, a cross-machine link, a mode, a rehearsal rig), each of which
+needs effort of its own. On the other: the time it saves me, which is how
+long the step takes by hand times how often it happens over the thing's
+whole life. Spending more to automate a step than a lifetime of doing it by
+hand would cost is a poor return. For any piece whose cost is more than a
+task, give me one line: the step it removes, how often, and what it adds. A
+nice-to-have in DISCOVERY.md whose cost outweighs its saving is a question
+for me, with that line, not a task.
 
 ## 2. Write PLAN.md
 
