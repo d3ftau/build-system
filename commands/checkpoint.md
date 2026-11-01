@@ -42,18 +42,18 @@ for me, not on production polish.
    still rest on decisions that hold? Check CLAUDE.md's hard rules for
    anything added mid-build by the agent rather than by me.
 
-6. **Is it still worth it?** A continuous challenge to what has been built
-   and what is still to come, at every checkpoint. For each piece of
-   automation or machinery, built or planned, weigh the effort it has taken
-   and will take (building, testing, upkeep, and the new problems it brought
-   that needed solving in turn) against the time it saves me over its life:
-   the manual step's length times how often it happens. A line or two of code
-   that saves a step is fine, however rare the step. Flag where the effort
-   has outgrown the saving, and where a piece exists mainly to fix problems
-   another piece created: that chain is the warning sign. If the remaining
-   plan rests on such a chain, the verdict is **re-plan**, not proceed with
-   trims. If I've asked whether this is over-engineered, answer from this
-   step and say plainly what was over-built, before what to keep.
+6. **Is it still worth it?** A challenge, every checkpoint, to what's built
+   and what's still to come, limited to the expensive automation: the pieces
+   that brought a new secret, permission, cross-machine link, mode or
+   rehearsal rig, or that exist to fix a problem another piece created.
+   Ordinary code isn't weighed. For each, the effort it has taken and will
+   take (building, testing, upkeep, and the problems it caused that needed
+   solving in turn) against what it saves me over its life (the manual
+   step's length times how often it happens) or the mistakes it prevents.
+   The chain of fixes is the warning sign. If the remaining plan rests on
+   one, the verdict is **re-plan**, not proceed with trims. If I've asked
+   whether this is over-engineered, answer from this step and say plainly
+   what was over-built, before what to keep.
 
 7. **Can a person use what exists?** Re-run PLAN.md's human surface table
    against the code as it is now. If this phase was meant to end deployed,

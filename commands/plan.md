@@ -25,18 +25,16 @@ Leave off anything technical with a sensible default — library choice, file
 layout, config names, lint rules. /build decides those and reports them; you
 don't ask about them and don't list them.
 
-**Then weigh each piece of automation: effort against time saved.**
-Automation is the goal, and one that costs a line or two of code is simply
-done. The test is the return. On one side: the time to build it, test it and
-keep it working, plus any new problem it creates (a secret to carry, a
-permission, a cross-machine link, a mode, a rehearsal rig), each of which
-needs effort of its own. On the other: the time it saves me, which is how
-long the step takes by hand times how often it happens over the thing's
-whole life. Spending more to automate a step than a lifetime of doing it by
-hand would cost is a poor return. For any piece whose cost is more than a
-task, give me one line: the step it removes, how often, and what it adds. A
-nice-to-have in DISCOVERY.md whose cost outweighs its saving is a question
-for me, with that line, not a task.
+**Then weigh the expensive automation, and only that.** Code is automation,
+and ordinary code (a function, a script, a check) is never weighed. The test
+fires only on a piece that brings a new secret, permission, cross-machine
+link, mode or rehearsal rig, or that exists to fix a problem another piece
+created. That last one is the clearest warning: a chain of fixes for the
+automation's own problems. For each piece that fires, one line: the effort
+to build and keep it, against what it saves me over its life (the manual
+step's length times how often it happens) or the mistakes it prevents. If
+the saving doesn't clearly win, it's a question for me with that line, not a
+task. Nothing fires, nothing to say.
 
 ## 2. Write PLAN.md
 

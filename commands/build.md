@@ -45,6 +45,11 @@ Only these stop you:
   tell me what you expected, what happened, and what you think the root cause
   is — the same as /stuck.
 - **A plan so wrong that every way forward is a guess.**
+- **A ruling that adds expensive automation the plan didn't weigh**: a new
+  secret, permission, cross-machine link, mode or rehearsal rig, or a fix for
+  a problem another piece created. Weigh it as /plan does (effort against
+  time saved or mistakes prevented). If the saving doesn't clearly win, stop
+  and ask instead of ruling. Ordinary code never triggers this.
 
 ## Rulings, not stalls
 

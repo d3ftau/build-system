@@ -190,19 +190,24 @@ it must beat it", spread across seven commands. Greg:
 So the rule is a return test, not a bias toward manual: **the effort to build
 and keep a piece of automation, plus the problems it creates, against the
 time it saves over its whole life.** Cheap automation is simply done.
-Brief, spec, build and oneshot are rolled back to before `323bf3d`.
+Brief, spec and oneshot are rolled back to before `323bf3d`; build has a narrower stop.
 
 - `discovery.md` (kept from the first fix): each requirement records its
   strength, must or nice-to-have, beside who raised it.
-- `plan.md`: before writing PLAN.md, weigh each piece of automation, effort
-  against time saved. Anything costing more than a task gets one line (step
-  removed, how often, what it adds). A nice-to-have whose cost outweighs its
-  saving goes to Greg as a question, not a task.
-- `checkpoint.md`: a new step 6, "Is it still worth it?", a challenge at every
-  checkpoint to what's built and what's to come. It flags effort outgrowing
-  the saving, and especially a chain of pieces that exist to fix problems
-  other pieces created. Such a chain under the remaining plan means re-plan.
-  It's also where "is this over-engineered?" gets answered.
+- `plan.md`, `build.md` and `checkpoint.md`: the return test (effort to
+  build and keep, against time saved over its life or mistakes prevented)
+  fires only on expensive automation: a new secret, permission,
+  cross-machine link, mode or rehearsal rig, or a piece that fixes another
+  piece's problem (the chain, the clearest warning). Ordinary code is never
+  weighed, so the rule adds no overhead to normal work (Greg: "code by
+  definition is automation").
+  - `/plan`: one line per piece that fires; if the saving doesn't clearly
+    win, it goes to Greg as a question.
+  - `/build`: a ruling that adds such a piece unweighed is a stop, not a
+    ruling. Most of Build 2's machinery grew here, mid-phase.
+  - `/checkpoint` step 6, "Is it still worth it?": re-weighs those pieces,
+    built and planned, every phase. A chain under the remaining plan means
+    re-plan; it's also where "is this over-engineered?" is answered.
 
 Still open: seeing it work in a real /plan and /checkpoint. Whether the
 challenge-response rule belongs in `~/.claude/CLAUDE.md` is Greg's call
