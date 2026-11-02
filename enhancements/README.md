@@ -100,4 +100,5 @@ now while it's fresh; leave the fix to a dedicated session with a clear head.
   in the real inventory, and a re-planned cutover that couldn't be rehearsed
   at all. Then Claude Code itself was found missing (Build 1 skips
   `node_modules`), because the port check compared inventories and never
-  asked whether Greg could work on the new box.
+  asked whether Greg could work on the new box. And the rehearsal VM filled
+  devbox's own disk while devbox was serving.

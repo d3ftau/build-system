@@ -42,6 +42,19 @@ because Greg asked *"How am I going to talk to you with devbox off?"*:
    plugins, SSH host keys. The audit found nothing else, but it should have
    been part of the done check from the start.
 
+5. **The rehearsal filled the live server's disk.** The rehearsal VM runs on
+   devbox, the production box, with a 500 GB sparse disk on a 344 GB
+   partition. One restore had fitted (96 GB free at the start). The final
+   restore and the services stage grew the image to 107 GB and took devbox's
+   root partition to 100 % around 11:45 UTC. Claude found out only because
+   Greg's `/compact` failed with `ENOSPC`. Greg: *"Your test you nitwit"*.
+   Nothing live was damaged: every container stayed up, nothing logged a
+   disk-full error, and no database under `~/projects` or in the Docker
+   volumes was written while it was full (checked afterwards). But the
+   rehearsal was lost at its last stage, and devbox's services ran on a full
+   disk. Neither the plan nor `rehearse` sized the test against the box it
+   runs on, and nothing watched devbox's free space while it ran.
+
 Along the way:
 
 - The tests for the venv fix twice used invented unit files. The real ones
@@ -77,7 +90,17 @@ Along the way:
    was running), and devbox's real files get edited after the rehearsal. The
    rehearsal used fixtures and a quiet moment.
 
+5. **A test on the production box is not budgeted against it.** A rehearsal
+   that shares the live server's disk, memory or network is a load on
+   production. Its worst-case footprint was never written down, checked up
+   front, or watched while it ran.
+
 ## Candidate fixes (not prescriptions)
+
+- `/plan`: any test rig that runs on a live box gets its worst-case footprint
+  (disk, memory) checked against the box's free space before it starts, and
+  a guard that stops it before the box runs out. Here: a 500 GB sparse disk
+  on 113 GB free.
 
 - `/build`: a rehearsal counts only for the commit and input files it ran
   with. Before handing over a real run, list every change since the last
