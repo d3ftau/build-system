@@ -229,3 +229,13 @@ machinery around the cutover (the SSH key, the sudo helper, `CUTOVER_AT`,
 the stand-in devbox) and the wipe guard. The Phase 3 re-plan cut FR-12 along
 with those, so the correction overshot and removed a feature Greg values. A
 fix here must cut what fails the return test, not everything near it.
+
+More evidence (Greg, 2026-11-03): the stick pins the target disk by model
+(`TARGET_DISK_MODEL`, from a Windows command Greg ran, plus a ruling about
+libata's 16-byte model names). On a replacement machine, the one case the
+kept stick exists for, it refuses, and recovery first needs a re-written
+stick. Choosing the drive on the installer's screen takes a second and works
+on any machine. Greg: *"it's a one second job to select the correct drive on
+the new machine. Putting it on the stick just creates more work if the
+current machine truly dies"*. "No hands" turned a one-off human choice into
+code that blocks the case it was meant for.
