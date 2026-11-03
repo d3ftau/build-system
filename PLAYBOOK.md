@@ -343,6 +343,12 @@ step:
 `make check` is the one command that proves the app is healthy — what the
 agent runs on itself and what the stop hook enforces.
 
+Python projects run their tests in parallel: `pytest -q -n auto` in `make test`
+and `make check`, with `pytest-xdist` as a dev dependency. So every test keeps
+its state to itself — `tmp_path` for files and databases, `monkeypatch` for env
+vars, no fixed ports — and never depends on another test running first.
+Targeted runs (`uv run pytest tests/test_x.py`) stay serial.
+
 ---
 
 ## Phone vs desk
