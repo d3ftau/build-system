@@ -216,3 +216,16 @@ challenge-response rule belongs in `~/.claude/CLAUDE.md` is Greg's call
 Also (2026-11-03, review): `build.md`'s "take the choice that's easiest to
 undo" is now "the smallest choice (between equals, the one easier to undo)".
 That was the second `/build` rule named in failure mode 2.
+
+## Correction (Greg, 2026-11-03)
+
+> *"The kept stick and monthly rewrite are fine - I actually love the idea of
+> leaving the stick in and in the event of disaster just pulling it out and
+> whacking it in a new machine"*
+
+The kept stick and its monthly rewrite were wanted. They aren't evidence of
+over-building, and they shouldn't have been cut. The over-build was the
+machinery around the cutover (the SSH key, the sudo helper, `CUTOVER_AT`,
+the stand-in devbox) and the wipe guard. The Phase 3 re-plan cut FR-12 along
+with those, so the correction overshot and removed a feature Greg values. A
+fix here must cut what fails the return test, not everything near it.
