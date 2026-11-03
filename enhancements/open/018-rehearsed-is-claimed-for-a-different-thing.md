@@ -116,3 +116,32 @@ Along the way:
   restart in separate blocks.
 - `/checkpoint`: compare the code's user-facing messages against the spec's
   FRs. The LAN message contradicted FR-6.
+
+## More evidence (after the port, 2026-11-02)
+
+Mode 2 (parity measured instead of purpose) turned up three more times:
+
+- **The swap gate passed** (2 MB) while qwen2.5:14b ran at 2 tok/s on the
+  mini's CPU. That's useless for picker and foodClass. The gate measured
+  memory, not whether the job gets done.
+- **`claude --continue` opened an empty session** in five projects. Plan
+  decision 6 said "sessions are killed; history comes over; cclauncher
+  relaunches". The history arrived, but resuming it was never tried:
+  cclauncher's `--continue || fresh` fallback fired on the kill. The reverse
+  of the state change (kill, then relaunch) was never tested.
+- **Reaching llmbox** was proven by a policy test (T2), never by a wake from
+  the mini. The first real wake failed. The cause was a cable, but the plan
+  would have missed any other cause in the same way.
+
+Modes 1 and 4 have a root cause in `019`.
+
+## Partly fixed (2026-11-03)
+
+- `spec.md`, Verification Gates: one gate is what the build exists for,
+  done the way Greg does it, or a named manual check. Never a stand-in.
+- Modes 1 and 4 (a rehearsal carried past changes, inputs that differ):
+  covered by `019`'s fix.
+
+Still open: a test rig's footprint on a live box; reading another build's
+exclusions; one paste block per action; `/checkpoint` comparing user-facing
+messages with the FRs.

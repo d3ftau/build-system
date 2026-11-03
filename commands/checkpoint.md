@@ -7,7 +7,8 @@ A build started before 2026-10-11 has no BUILD-LOG.md; its decisions are in the
 plan's and spec's own notes, and you read those instead.
 The phase being checked is everything above the first unticked `/checkpoint`
 line in PLAN.md, back to the previous checkpoint. Every task in it passed its
-own gate — that's already known and isn't the question. The question is
+own gate on the code as it was then; step 5 asks whether that still holds.
+The question is
 **whether what this phase built is good enough to build the next phase on.**
 
 Scale this to the app. A personal app gets judged on whether it does the job
@@ -39,7 +40,10 @@ for me, not on production polish.
    inherited task to task? Would you choose it starting fresh?
 
 5. **Is the rest of the plan still true?** For each remaining task, does it
-   still rest on decisions that hold? Check CLAUDE.md's hard rules for
+   still rest on decisions that hold? Which earlier passes does it rely on,
+   and has anything they ran on changed since? If the real run happens once,
+   does the plan still end with the full rehearsal on frozen code? A plan or
+   re-plan without it is **re-plan**. Check CLAUDE.md's hard rules for
    anything added mid-build by the agent rather than by me.
 
 6. **Is it still worth it?** A challenge, every checkpoint, to what's built

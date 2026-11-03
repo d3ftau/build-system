@@ -61,9 +61,9 @@ each decision in `BUILD-LOG.md` in the project root as it's made:
 Deviating from the plan without a logged ruling is a decision made in secret.
 
 If a ruling **changes what I get or see** — a question /plan should have asked
-and didn't — take the choice that's easiest to undo and log it as
-`T4: Ruling (you'd notice): …`. If the choice would be expensive to undo,
-it's a stop instead.
+and didn't — take the smallest choice (between equals, the one easier to undo)
+and log it as `T4: Decision that changes experience: …`. If the choice would
+be expensive to undo, it's a stop instead.
 
 BUILD-LOG.md is also your memory. After a context compaction, trust it, the
 ticks in PLAN.md and `git log` over your recollection, and never redo a task
@@ -73,22 +73,19 @@ the log marks done.
 
 - **Watch a new test fail before writing the code that passes it**, and know
   which break it catches. A test that passes first time proves nothing.
-- **Never implement a model call for work whose rules can be enumerated.** If
-  the plan specifies one for something enumerable, that's a ruling — build the
-  code and log it. The inverse: before writing rules instead of a model call,
-  name the inputs they read; if one is the thing being worked out, the rules
-  can't be written — stop and say so.
-- **Evidence tests the claim itself.** A bug is real only if the real upstream
-  system can produce it — state the precondition and where you confirmed it.
-  A test input you had to invent to reach a branch is a finding: the branch
-  probably models something that can't happen; log it. Test the reverse of
-  every state change. Measure any **Fails if** on real data; below it, the
-  task isn't done.
+- **Model calls and evidence follow `~/.claude/CLAUDE.md`.** A model call the
+  plan specifies for enumerable work is a ruling: build the code and log it.
+  An invented test input is a finding: log it. Measure any **Fails if** on
+  real data; below it, the task isn't done.
 - **Finish the task:** run `make check` (once it exists) plus any test the plan
   names, and read the output. Tick the task in PLAN.md and the FRs in SPEC.md
   it satisfies. Commit, message starting with the task id. Append
   `T4: done — <commit> — make check: <result>` to BUILD-LOG.md in the same
-  step.
+  step, plus `not covered: …` for anything the test set up differently from
+  real use.
+- **A pass is evidence about the code it ran on, not the task forever.** When
+  a later change touches what an earlier pass ran on, that pass is stale:
+  re-run it, or name it as unrehearsed in the report.
 
 ## At the end of the phase: report
 
@@ -96,8 +93,8 @@ Write it for someone learning, in plain language, no jargon left unexplained:
 
 1. **What you can do now** — what works, from my side, and how to see it
    (a URL, a command, the email that'll arrive).
-2. **Rulings** — every one from this phase, "you'd notice" first, each with
-   what it costs if wrong.
+2. **Rulings** — every one from this phase, decisions that change experience
+   first, each with what it costs if wrong. Then any pass gone stale.
 3. **Worth understanding** — one or two things about how this works or why it
    was built this way, that would help me next time. Pick what's genuinely
    useful, not a tour.

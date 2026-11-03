@@ -45,7 +45,8 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [015](done/015-pipeline-built-for-the-wrong-stakes.md) | The pipeline is built for shipping to strangers and doesn't know shared infrastructure exists | **DONE** | every command, `bin/build-state`, `hooks/verify-before-stop.sh`, `~/projects/platform`, cclauncher | 2026-10-11 |
 | [016](open/016-first-end-to-end-run-skips-known-prep.md) | The first end-to-end run is ordered ahead of prep the spec already says it needs; user actions known at /plan become mid-build stops | OPEN | `plan.md` (not yet) | — |
 | [017](open/017-nice-to-have-becomes-the-spine.md) | A nice-to-have becomes the build's spine; every snag adds machinery instead of questioning the goal (Greg: "one of your biggest failures yet") | OPEN (fix written, unverified) | `discovery.md`, `plan.md`, `build.md`, `checkpoint.md` | — |
-| [018](open/018-rehearsed-is-claimed-for-a-different-thing.md) | "Rehearsed" is claimed for something other than what runs; the done check measures parity, not the box's purpose (Claude itself wasn't ported) | OPEN | `build.md`, `spec.md`, `plan.md`, `checkpoint.md` (not yet) | — |
+| [018](open/018-rehearsed-is-claimed-for-a-different-thing.md) | "Rehearsed" is claimed for something other than what runs; the done check measures parity, not the box's purpose (Claude itself wasn't ported) | OPEN (partly fixed) | `spec.md` purpose gate and, via `019`, the rehearsal fixes (2026-11-03); the rest not yet | — |
+| [019](open/019-a-pass-is-treated-as-progress-not-evidence.md) | "End to end early" applied to a build that has to work first time: the full rehearsal ran before the changes it should have checked, and a pass read as progress banked | OPEN (fix written, unverified) | `plan.md`, `build.md`, `checkpoint.md` (2026-11-03) | — |
 
 ## Open items in detail
 
@@ -102,3 +103,9 @@ now while it's fresh; leave the fix to a dedicated session with a clear head.
   `node_modules`), because the port check compared inventories and never
   asked whether Greg could work on the new box. And the rehearsal VM filled
   devbox's own disk while devbox was serving.
+- `019`: backrest Build 2's hour-long rehearsal (T12) ran before Phase 3
+  rewrote the path it tested. The rewritten path was never rehearsed, and the
+  real run failed at each place the tests had differed from it. Root cause:
+  `plan.md`'s "end to end early" fits builds that evolve, not ones whose real
+  run happens once; and a pass counts as a ticked task, so it never goes
+  stale and never says what it left out.

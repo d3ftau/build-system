@@ -228,6 +228,10 @@ and logs them.
 Then `PLAN.md`. **The order is the point.** An invalidating bet is proved
 first with the smallest real slice of code. Then one real path end to end as
 early as possible — the simplest case, real at every stage, narrow not fake.
+That's for builds that evolve. When the real run happens once (a migration,
+a cutover), the early run is only a probe, and the full rehearsal is the last
+task, on frozen code: an early pass goes stale with every change after it
+(`019`).
 The scaffold is part of that first task, not its own (`014`). The first phase
 ends **deployed for real**: running on the platform, back by itself after a
 reboot, and a failed run reaches me. The last task writes the README and
@@ -256,7 +260,9 @@ security-sensitive or outside the project, after two failed attempts at the
 same problem, or when the plan is too wrong to guess past. Everything else it
 decides and logs in `BUILD-LOG.md` as
 `Ruling: what — why — what it costs if wrong`. A ruling that changes what I
-see takes the easiest-to-undo option and is flagged "you'd notice". The log is
+see takes the smallest option and is logged as a "decision that changes
+experience", listed first in the report. Each pass is logged with what it
+didn't cover, and goes stale when later work touches what it ran on. The log is
 also its memory across context compaction.
 
 Per task: watch a new test fail first; never a model call for enumerable

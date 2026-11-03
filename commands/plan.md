@@ -50,6 +50,13 @@ First line: `# PLAN — <build name from BRIEF.md>`.
   not pretend data: a pipeline running on stubbed responses proves only the
   wiring. Fake a stage only when the real thing is genuinely unavailable yet,
   and say which task makes it real.
+- **Unless the real run happens once** — a migration, a cutover, a run on
+  hardware or data that can't be repeated. Say so at the top of the plan.
+  Then the early end-to-end run is a cheap probe for unknowns, not the proof,
+  and the last task before the real run is the full rehearsal: frozen code,
+  the real run's inputs, and a list of what it still does differently from
+  the real run. A change after it re-runs the stages it touches. Cutting
+  testing never cuts this one.
 - **The scaffold is part of that first task**, not a task of its own: Makefile
   with `dev`/`test`/`check`, `.env.example`, `.gitignore`, the platform's
   deploy template, and a first real test. No placeholder test that's meant to

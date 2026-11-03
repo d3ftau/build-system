@@ -212,3 +212,7 @@ Brief, spec and oneshot are rolled back to before `323bf3d`; build has a narrowe
 Still open: seeing it work in a real /plan and /checkpoint. Whether the
 challenge-response rule belongs in `~/.claude/CLAUDE.md` is Greg's call
 (proposed, not applied).
+
+Also (2026-11-03, review): `build.md`'s "take the choice that's easiest to
+undo" is now "the smallest choice (between equals, the one easier to undo)".
+That was the second `/build` rule named in failure mode 2.

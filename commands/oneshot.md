@@ -64,31 +64,18 @@ presence moves the project onto the pipeline track. If the project needs hard
 rules a future session must not break, put them in a short CLAUDE.md, with
 this line verbatim: "Tests may never be skipped, xfailed, or deleted to make a
 gate pass. If a test fails, fix the code — or tell me the test is wrong and
-why."
+why. Reducing coverage to go green is a failure, not a fix. Never add to
+.claude/known-failing-checks — only the user does."
 
 Commit.
 
 ## 4. Build it without stopping
 
-Work down the to-do list without checking in. Stop only for something
-destructive or irreversible, something security-sensitive, something outside
-this project I didn't approve (pushing, another repo, system config beyond the
-platform's own steps), two failed attempts at the same problem (then tell me
-what you expected, what happened and the likely root cause), or a design so
-wrong that every way forward is a guess.
-
-Everything else you decide, and log in `BUILD-LOG.md` as
-`Ruling: <what> — <why> — <what it costs if wrong>`. A ruling that changes
-what I'd see takes the option that's easiest to undo and is marked
-`(you'd notice)`.
-
-For each item:
-- Watch a new test fail before writing the code that passes it.
-- Evidence tests the claim itself: a bug is real only if the real upstream
-  system can produce it; a test input you had to invent to reach a branch is a
-  finding; test the reverse of every state change.
-- Run `make check` once it exists and read the output.
-- Tick the item in README.md, commit, and log it.
+Work down the to-do list without checking in, by
+`~/.claude/commands/build.md`'s rules: "Only these stop you", "Rulings, not
+stalls" and "Each task". Read them now. Here "the plan" is the approved
+to-do list, there are no `⏸ STOP` tasks, and an item is ticked in README.md,
+not PLAN.md.
 
 If an item turns out bigger than it looked, add items rather than stretching
 one. If the list passes about ten, stop and tell me — it's outgrown a one-shot.

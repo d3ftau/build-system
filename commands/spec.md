@@ -25,11 +25,9 @@ layout, tone, density, an app I like the look of. Ask; don't fill it in. If I
 don't care, write that down: the first screen built sets the style and gets
 shown to me before a second is built.
 
-Model calls: any part using a model must name the fuzzy judgment that needs
-one. If the rules can be enumerated, that part is code. The inverse: before
-calling something enumerable, name the inputs the rules read — if one of them
-is the thing being worked out, it's judgment wearing a rule's clothes. Mark
-every prediction about how well a model will judge something as untested.
+Model calls follow `~/.claude/CLAUDE.md`: any part using one names the fuzzy
+judgment that needs it. Mark every prediction about how well a model will
+judge something as untested.
 
 ## 2. Write two files
 
@@ -93,7 +91,9 @@ output that looks right — because that's the kind I won't notice.
 
 ### Verification Gates
 Exact shell commands that must exit 0. Commands, not adjectives. Include one
-that proves it's deployed and comes back after a reboot.
+that proves it's deployed and comes back after a reboot, and one for what the
+build exists for, done the way I'd do it. If that one can't be a command,
+write it as a named manual check; never swap it for a stand-in that can.
 
 ## 3. What would bite me
 

@@ -53,7 +53,7 @@ you lose it here.
 **Record how strongly each one is wanted, too: must, or nice-to-have.** "Is it
 possible to script this?" is a question, not a requirement. Write it down as a
 nice-to-have unless I said I need it. A nice-to-have recorded as a must is how
-a 30-second manual step turns into a week of automation (`017`).
+a 30-second manual step turns into a week of automation.
 
 Two things to write down rather than smooth over:
 
