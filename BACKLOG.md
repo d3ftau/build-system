@@ -13,3 +13,5 @@ Sandbox-tested install recipe (shell compression only, permissions kept):  [back
 - A failure that broke one build warns the next build before it starts (repo-creeper #120)
 
 - Your token spend reports itself weekly instead of waiting for you to audit it (repo-creeper #121)
+
+- The dashboard tells Greg which apps nobody has used for 3 months, and which ones have earned their next build (repo-creeper #277)
