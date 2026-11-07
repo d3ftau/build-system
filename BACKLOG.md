@@ -11,3 +11,5 @@ Sandbox-tested install recipe (shell compression only, permissions kept):  [back
 - A silent app break reaches your phone within a day, not the next time you use it (repo-creeper #118)
 
 - A failure that broke one build warns the next build before it starts (repo-creeper #120)
+
+- Your token spend reports itself weekly instead of waiting for you to audit it (repo-creeper #121)
