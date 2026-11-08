@@ -1,6 +1,6 @@
 # Enhancement: /explore searches the project's framing, not the job, and "nothing fits" licenses a build
 
-**Status: OPEN** (recorded 2026-11-07). Greg: *"How did explore miss this? It's
+**Status: DONE** (recorded 2026-11-07, fixed 2026-11-08: all five candidate fixes landed, the last in `checkpoint.md` step 5). Greg: *"How did explore miss this? It's
 literally the entire point of the step"*, then *"Yes this is a bad failing"*.
 
 ## Where this came from

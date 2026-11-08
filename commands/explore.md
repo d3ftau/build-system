@@ -10,11 +10,20 @@ data in, storing it, scheduling, browsing, notifying, any model call, the
 screen — say which shared service or convention already covers it, and which
 existing project under `~/projects` already does something like it.
 
+Then ask it whole: is anything I already run, here or on another box, doing
+this entire job, even under another name? Mapping parts onto pieces hides a
+tool that already does all of them.
+
 This is where to start, not where to stop. The platform is the default
 because every app built on it is one less thing to keep alive, not because
 nothing better exists.
 
 ## 2. What else could solve this?
+
+First write the job in one sentence with the brief's domain taken out
+("research a question across many web sources and write a cited report", not
+"find the best vacuum deal"). Search both: the domain version and the generic
+one. The brief's vocabulary hides any category it doesn't use.
 
 Name the categories of tool that could carry the job, then the two or three
 leading candidates in each. Two separate searches, never one: **commercial
@@ -40,6 +49,14 @@ Go and look: current feature pages, API docs, pricing tiers, changelogs.
 Mark every finding **documented** or **observed working**. Never write "no X
 can do Y" without evidence — concluding a category can't do something
 standard is how a build invents a subsystem to replace a checkbox.
+
+A candidate that lacks the domain-specific parts isn't out for that alone.
+Ask whether it could do the core with those parts added, and compare the cost
+of adding them against the cost of building everything else.
+
+A "nothing fits" verdict lists, beside it, the literal queries it rests on and
+names the most general one. If every query uses the brief's own domain words,
+the verdict isn't allowed yet: run the generic one first.
 
 ## 4. Claims about model judgment
 

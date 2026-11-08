@@ -45,6 +45,10 @@ for me, not on production polish.
    does the plan still end with the full rehearsal on frozen code? A plan or
    re-plan without it is **re-plan**. Check CLAUDE.md's hard rules for
    anything added mid-build by the agent rather than by me.
+   If this phase redesigned the build's core approach, re-run /explore's
+   existence search (domain and generic, commercial and open source) with the
+   new understanding of the job. A redesign often lands on something that
+   already exists.
 
 6. **Is it still worth it?** A challenge, every checkpoint, to what's built
    and what's still to come, limited to the expensive automation: the pieces

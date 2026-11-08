@@ -47,7 +47,7 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [017](open/017-nice-to-have-becomes-the-spine.md) | A nice-to-have becomes the build's spine; every snag adds machinery instead of questioning the goal (Greg: "one of your biggest failures yet") | OPEN (fix written, unverified) | `discovery.md`, `plan.md`, `build.md`, `checkpoint.md` | — |
 | [018](open/018-rehearsed-is-claimed-for-a-different-thing.md) | "Rehearsed" is claimed for something other than what runs; the done check measures parity, not the box's purpose (Claude itself wasn't ported) | OPEN (partly fixed) | `spec.md` purpose gate and, via `019`, the rehearsal fixes (2026-11-03); the rest not yet | — |
 | [019](open/019-a-pass-is-treated-as-progress-not-evidence.md) | "End to end early" applied to a build that has to work first time: the full rehearsal ran before the changes it should have checked, and a pass read as progress banked | OPEN (fix written, unverified) | `plan.md`, `build.md`, `checkpoint.md` (2026-11-03) | — |
-| [020](open/020-explore-searches-the-framing-not-the-job.md) | `/explore` searches the project's framing, not the job, and "nothing fits" licenses a build (shortlister never searched "deep research") | OPEN | `explore.md` (not yet) | — |
+| [020](done/020-explore-searches-the-framing-not-the-job.md) | `/explore` searches the project's framing, not the job, and "nothing fits" licenses a build (shortlister never searched "deep research") | **DONE** | `explore.md`, `checkpoint.md` | 2026-11-08 |
 
 ## Open items in detail
 
