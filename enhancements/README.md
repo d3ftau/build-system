@@ -48,7 +48,8 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [018](open/018-rehearsed-is-claimed-for-a-different-thing.md) | "Rehearsed" is claimed for something other than what runs; the done check measures parity, not the box's purpose (Claude itself wasn't ported) | OPEN (partly fixed) | `spec.md` purpose gate and, via `019`, the rehearsal fixes (2026-11-03); the rest not yet | — |
 | [019](open/019-a-pass-is-treated-as-progress-not-evidence.md) | "End to end early" applied to a build that has to work first time: the full rehearsal ran before the changes it should have checked, and a pass read as progress banked | OPEN (fix written, unverified) | `plan.md`, `build.md`, `checkpoint.md` (2026-11-03) | — |
 | [020](done/020-explore-searches-the-framing-not-the-job.md) | `/explore` searches the project's framing, not the job, and "nothing fits" licenses a build (shortlister never searched "deep research") | **DONE** | `explore.md`, `checkpoint.md` | 2026-11-08 |
-| [021](open/021-checkpoint-suggested-before-the-context-is-written-down.md) | `/checkpoint` is suggested before what the session learned is written down; clearing the window to run it loses it (Greg: "I wonder how much undocumented knowledge I am losing") | OPEN | `build.md`, `checkpoint.md` (not yet) | — |
+| [021](open/021-checkpoint-suggested-before-the-context-is-written-down.md) | `/checkpoint` is suggested before what the session learned is written down; clearing the window to run it loses it (Greg: "I wonder how much undocumented knowledge I am losing") | OPEN (fix written, unverified; measurement not done) | `build.md`, `checkpoint.md` (2026-11-08, with `022`) | — |
+| [022](open/022-checkpoint-report-unreadable-on-a-phone.md) | The /checkpoint and /build phase reports can't be acted on from a phone: colliding numbers, decisions filed as facts, code-speak, a verdict smaller than its findings | OPEN (fix written, unverified) | `checkpoint.md`, `build.md`, `plan.md` (2026-11-08) | — |
 
 ## Open items in detail
 
@@ -121,3 +122,9 @@ now while it's fresh; leave the fix to a dedicated session with a clear head.
   CLAUDE.md lacked a new service. It surfaced only because he asked before
   clearing. Root cause: /build has no write-down step before the handoff, and
   user decisions made in chat never flow back into SPEC.md.
+- `022`: the /checkpoint and /build phase reports are written for whoever built
+  the code, not for a phone. Numbers collide ("2. Do this"), facts that need an
+  action carry no question, code names stand in for explanations, and
+  shortlister's "two small fixes" verdict sat over 8 findings that added up to
+  a re-plan. Root cause: findings were graded by severity but given no fate, and
+  questions sat in prose instead of a survey.

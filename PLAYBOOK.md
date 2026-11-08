@@ -270,10 +270,12 @@ rules; evidence has to test the claim itself (a bug is real only if reality
 can produce it, an invented test input is a finding, test the reverse of
 every state change); tick, commit, log.
 
-The phase ends with a **report written for learning**: what I can do now and
-how to see it, every ruling, one or two things worth understanding about how
-it works, and the real `make check` output. Being involved taught me a lot;
-this keeps that without making me the bottleneck.
+The phase ends by writing down what was decided in chat (`021`), so clearing
+the window for `/checkpoint` loses nothing. Then comes a **report written for
+learning**, built for a phone (`022`): what I can do now and how to see it,
+every ruling (each asked keep-or-change in a survey), what isn't tested for
+real, and one or two things worth understanding. Being involved taught me a
+lot; this keeps that without making me the bottleneck.
 
 ### `/checkpoint` — fresh session
 
@@ -285,7 +287,10 @@ reads the code fresh and grades each problem by what it does to me, reviews
 the build's rulings, looks for patterns no task decided, and checks the rest
 of the plan still holds. Fresh session, because the one that built it
 inherited the assumptions it's meant to question. It recommends proceed, fix
-first, or re-plan; I decide.
+first, or re-plan; I decide. The report is built for a phone (`022`): every
+finding is labelled as a fix, a decision, a later task or a note, in plain
+words. The evidence goes in `CHECKPOINT.md`, and the decisions come as a tap-to-answer
+survey.
 
 ### `/stuck`
 

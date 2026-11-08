@@ -27,13 +27,17 @@ for me, not on production polish.
    it. Grade every problem by what it does to me using the app — not by
    whether the spec mentions the case. A spec's silence isn't permission for
    something to break in a way any reasonable person would expect to work.
-   Sort into: **breaks it for me**, **worth fixing**, and **minor** (listed,
-   not pushed).
+   Grade each as **breaks it for me**, **worth fixing** or **minor**. The
+   grade sets its fate in the report: anything that breaks it is a fix or a
+   decision, never a note.
 
 3. **The rulings.** Read BUILD-LOG.md's `Ruling:` lines for this phase (or,
    for an older build, the decisions recorded in PLAN.md and SPEC.md notes). Any
    you'd have decided differently, or that quietly changed what I get, name
-   them.
+   them. Each decision of mine quoted in BUILD-LOG.md should show in SPEC.md
+   where it applies; a SPEC.md that still says otherwise is a finding. So is
+   a `U` item (not tested for real) from /build's report that is still
+   untested.
 
 4. **Patterns no task decided.** Shapes several tasks share — where work
    happens, what gets trusted, how failure is handled. Decided anywhere, or
@@ -68,7 +72,52 @@ for me, not on production polish.
    check it's running, comes back after a restart, and that a failed run
    would reach me.
 
-Report only. Don't fix code or edit PLAN.md. Rank findings by consequence and
-end with one of: **proceed**, **fix first** (what), or **re-plan** (which
-tasks). When I've decided, tick the `/checkpoint` line and write my decision
-under it in one line.
+## The report
+
+Report only. Don't fix code or edit PLAN.md. I read and answer this on my
+phone, so the work above is thorough and the report is short.
+
+**Every finding gets a fate**, and the report is sorted by fate, not by step:
+- **Fix** (`F1`, `F2`…): you recommend fixing it before the next phase.
+- **Decision** (`D1`, `D2`…): it needs me. That covers a real choice, anything
+  that changes what I get, and any fact that implies an action (stale records
+  to clear, a stalled job, a requirement that's quietly broken). If you'd
+  write "I'd decide this later", that's a decision now: ask whether to defer.
+- **Later** (`L1`…): belongs to a named later task. Name it.
+- **Note** (`N1`…): true, and nothing to do. If a note suggests an action,
+  it's a decision instead.
+
+A finding that changes what I get, or what a later task needs, is never a
+note. These labels are the only numbering in the report. Sections and
+headings carry no numbers, so a reply like "F2 skip" can't be misread.
+
+**Write each item for someone who didn't build it.** Start with what I'd
+notice using the app, then the cause in plain words. No function, variable or
+file names in the item itself; when a term is unavoidable, explain it in a
+clause the first time. One to three sentences each.
+
+**The verdict comes first and counts everything**: proceed, fix first, or
+re-plan (which tasks), then "N fixes, N decisions, N later, N notes". It
+follows from the items. Any fix means at least fix first. If decisions could
+change the plan's shape, say so in the verdict, not after.
+
+**Detail goes in a file.** Write the full evidence (measurements, samples,
+worst cases, the code review, rulings, what wasn't checked) to `CHECKPOINT.md`
+in the project, replacing the previous one, and commit it. Organise it under
+the same labels so "more on D2" has one place to look. Send it to me with
+SendUserFile if that tool is available. The chat message holds only the
+verdict and the items.
+
+**Then ask the decisions as a survey** with AskUserQuestion, after the
+message:
+- One question per decision, with my options and your recommendation first,
+  marked "(Recommended)". Each question stands alone: say what it's about
+  in it, because the dialog may hide the report.
+- One question for the fixes: "Fix F1–F3 before the next phase?", with
+  options all / none / let me pick. If I pick, ask which, multi-select.
+- At most 4 questions a call. Ask the rest in further calls.
+- The verdict is the last question: proceed, fix first or re-plan, with
+  your verdict first.
+
+When I've answered, tick the `/checkpoint` line and write my decision under it
+in one line, with the item labels I approved.

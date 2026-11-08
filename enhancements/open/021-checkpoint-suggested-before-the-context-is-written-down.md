@@ -1,6 +1,12 @@
 # Enhancement: /checkpoint is suggested before what the session learned is written down, and clearing the window loses it
 
-**Status: OPEN** (recorded 2026-11-08). Greg: *"checkpoint shouldn't be suggested
+**Status: OPEN (fix written, unverified; the measurement is still open)**
+(recorded 2026-11-08). Fixed in the same edit as `022`:
+- `/build` writes down what was decided in chat before its phase report, and
+  ends with "safe to clear".
+- `/checkpoint` step 3 checks that Greg's quoted decisions show in SPEC.md.
+
+The replay measurement below hasn't been done. Greg: *"checkpoint shouldn't be suggested
 until this check is done. I usually clear the current window to do checkpoint as
 it is much easier than opening a second session. I wonder how much undocumented
 knowledge I am losing."*

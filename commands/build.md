@@ -19,8 +19,9 @@ decision the plan didn't settle: make it a logged ruling if it's cheap to undo,
 and stop and ask if it's expensive to undo or changes what I'd see in a way I
 haven't been shown. If the plan carries no such lines, nothing was left open.
 
-If it's a `/checkpoint` line, build nothing. Tell me the phase is complete and
-that /checkpoint runs in a brand-new session, then stop.
+If it's a `/checkpoint` line, build nothing. Do the write-down below if this
+session built or decided anything, then tell me the phase is complete and the
+next step, the same way as the end of the phase report, and stop.
 
 ## Run the phase without stopping
 
@@ -87,17 +88,53 @@ the log marks done.
   a later change touches what an earlier pass ran on, that pass is stale:
   re-run it, or name it as unrehearsed in the report.
 
-## At the end of the phase: report
+## At the end of the phase: write down, then report
 
-Write it for someone learning, in plain language, no jargon left unexplained:
+I clear this window to run /checkpoint, so anything only in this conversation
+is lost. **Before the report**, list what was decided or learned in chat this
+phase that the repo doesn't hold, and put each where it belongs:
+- a decision of mine that changes what I get: SPEC.md, with my words quoted;
+- a new service, port or data folder: CLAUDE.md;
+- anything a later task needs: that task in PLAN.md;
+- what was tried and dropped, and why, and gotchas hit along the way:
+  BUILD-LOG.md;
+- a preference of mine that applies beyond this project: memory.
 
-1. **What you can do now** — what works, from my side, and how to see it
-   (a URL, a command, the email that'll arrive).
-2. **Rulings** — every one from this phase, decisions that change experience
-   first, each with what it costs if wrong. Then any pass gone stale.
-3. **Worth understanding** — one or two things about how this works or why it
-   was built this way, that would help me next time. Pick what's genuinely
-   useful, not a tour.
-4. **The real `make check` output** — the tail, not a summary.
+Record what I said and what was measured, not your verdict on your own work.
+Commit it.
 
-Then stop: the next step is /checkpoint in a fresh session.
+**The report.** I read it on my phone. Write it for someone learning, in plain
+language: no function or file names where a description will do, and any
+unavoidable term explained the first time. Label items, don't number
+sections: `W1`… what works, `R1`… rulings, `U1`… untested, so "R2 change"
+can't be misread.
+
+- **What works now** (`W`): what I can do, from my side, and how to see it (a
+  URL, a command, the email that'll arrive).
+- **Rulings** (`R`): every one from this phase, the ones that change what I
+  get first. For each: what you chose, the alternative, what it costs if
+  wrong.
+- **Not tested for real** (`U`): passes gone stale, and anything only tested
+  with invented inputs. Name what would test it for real. /checkpoint
+  follows these up.
+- **Worth understanding**: one or two things about how this works or why it
+  was built this way, that would help me next time. Not a tour.
+- **Written down**: one line on what the write-down added, and where.
+- **Checks**: one line, e.g. "126 passed, lint clean". Put the real `make
+  check` tail in BUILD-LOG.md. If anything failed, show the failure in full
+  here.
+
+**Then ask, as a survey** with AskUserQuestion, never as a question buried in
+the text:
+- every ruling, keep or change, with your choice first, marked
+  "(Recommended)". Each question says what it's about, since the dialog may
+  hide the report;
+- anything else you need from me (push, a cost, a manual step).
+
+At most 4 questions a call; ask the rest in further calls. If I change a
+ruling, make the change, run its checks, and log it as my ruling before the
+handoff.
+
+**End with the next step as the last line**, exactly what to type, e.g.
+"Everything is written down, so it's safe to clear this window. Then type
+/checkpoint."

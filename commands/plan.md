@@ -1,4 +1,4 @@
-Read CLAUDE.md, SPEC.md, EXPLORE.md (if it exists) and
+Read CLAUDE.md, SPEC.md, EXPLORE.md and CHECKPOINT.md (if they exist) and
 `~/projects/platform/PLATFORM.md` in full. Inspect the current directory.
 
 Do not create or modify any source files. If you are not already in
