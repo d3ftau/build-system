@@ -48,6 +48,7 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [018](open/018-rehearsed-is-claimed-for-a-different-thing.md) | "Rehearsed" is claimed for something other than what runs; the done check measures parity, not the box's purpose (Claude itself wasn't ported) | OPEN (partly fixed) | `spec.md` purpose gate and, via `019`, the rehearsal fixes (2026-11-03); the rest not yet | — |
 | [019](open/019-a-pass-is-treated-as-progress-not-evidence.md) | "End to end early" applied to a build that has to work first time: the full rehearsal ran before the changes it should have checked, and a pass read as progress banked | OPEN (fix written, unverified) | `plan.md`, `build.md`, `checkpoint.md` (2026-11-03) | — |
 | [020](done/020-explore-searches-the-framing-not-the-job.md) | `/explore` searches the project's framing, not the job, and "nothing fits" licenses a build (shortlister never searched "deep research") | **DONE** | `explore.md`, `checkpoint.md` | 2026-11-08 |
+| [021](open/021-checkpoint-suggested-before-the-context-is-written-down.md) | `/checkpoint` is suggested before what the session learned is written down; clearing the window to run it loses it (Greg: "I wonder how much undocumented knowledge I am losing") | OPEN | `build.md`, `checkpoint.md` (not yet) | — |
 
 ## Open items in detail
 
@@ -115,3 +116,8 @@ now while it's fresh; leave the fix to a dedicated session with a clear head.
   never searched "deep research", where 20k-star projects appear immediately.
   Root cause: search terms inherit the brief's domain, candidates are rejected
   for lacking add-on parts, and the verdict outlives the queries behind it.
+- `021`: shortlister's Phase 2 ended with "next step is /checkpoint in a fresh
+  session" while SPEC.md still contradicted two of Greg's mid-build decisions and
+  CLAUDE.md lacked a new service. It surfaced only because he asked before
+  clearing. Root cause: /build has no write-down step before the handoff, and
+  user decisions made in chat never flow back into SPEC.md.
