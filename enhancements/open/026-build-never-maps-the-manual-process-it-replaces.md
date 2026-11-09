@@ -51,7 +51,32 @@ work" that he doesn't read it properly, so nobody looking at it would have seen 
    wall of tasks, not a picture. An over-built shape is easy to see in a diagram (a box per store per
    portal) and invisible in a task list.
 
+## The order Greg wants (2026-11-09)
+
+*"The build flow should challenge me to get to the core problem we've identified after a whole day:
+bu[y] now or wait, then design the quickest way to get to an answer then ask if that answer is
+accurate enough"*. Three steps, in this order:
+
+1. **The core problem, as the decision the user makes.** /discovery keeps pushing until it's one
+   sentence (here: "buy now or wait?"). It took a whole build day to get there; it should take the
+   first session.
+2. **The quickest way to an answer.** Design for the fastest path to that decision from what's
+   already on screen (here: one Google Shopping search, OzBargain's lows, Woolworths' upsized price).
+3. **Then ask: is that answer accurate enough?** Accuracy is a question put to the user about the
+   fast answer, with its real errors shown. It is not a premise built in up front. Extra checking is
+   added only where the user says the fast answer isn't good enough, and only for the item that
+   decides the answer.
+
+deal-hunter ran it backwards: accuracy first ("prices are indicative", so check every page), then the
+work that made possible, and the decision ("buy now or wait") last, found by Greg after the phase.
+
 ## Candidate fixes
+
+- `discovery.md`: don't finish until the core problem is written as the user's decision in one
+  sentence, and challenge the user on it ("what do you decide with this?"). `brief.md` opens with it.
+- `plan.md`: Phase 1 is the quickest path to that decision, on real data. Accuracy comes in as a
+  `⏸ STOP` after it runs: "here's the fast answer for <real item>, and here's where it was wrong. Is it
+  accurate enough?". Anything beyond the fast path is planned only after that answer.
 
 - `discovery.md` / `brief.md`: before the brief is written, ask the user to **do the job by hand for
   real, once**, and map it in the brief: each step, what they look at, how long it takes, and which
