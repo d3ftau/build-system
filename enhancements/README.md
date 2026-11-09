@@ -53,6 +53,7 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [023](open/023-discovery-and-explore-search-the-same-way.md) | /discovery and /explore run the same existence search; 020's fixes reached only /explore, and DISCOVERY.md never recorded what it searched | OPEN (fix written, unverified) | `discovery.md`, `explore.md` (2026-11-08) | — |
 | [024](open/024-spec-designs-in-silent-failure.md) | /spec designs in silent failure: an invented "fail 3 times" threshold held back notices of the failure the brief named, filed as a "Cost: none" assumption (Greg: "borderline insane") | OPEN | `spec.md` (not yet) | — |
 | [025](open/025-testing-model-judgment-that-cant-change-anything.md) | Model-judgment tests are designed when no result could change the build; the agent hand-scores its own model family (Greg: "you're just scoring your own ability which is a waste of tokens") | OPEN | `explore.md`, `plan.md`, `build.md` (not yet) | — |
+| [026](open/026-build-never-maps-the-manual-process-it-replaces.md) | The build never maps the manual process it replaces, so it out-builds it (30 min for what Google shows in 2 s); /plan's design is prose the user won't read (Greg: "tries too hard to be \"complete\" instead of being useable") | OPEN | `discovery.md`, `brief.md`, `spec.md`, `plan.md`, `build.md`, `checkpoint.md` (not yet) | — |
 
 ## Open items in detail
 
@@ -134,3 +135,7 @@ now while it's fresh; leave the fix to a dedicated session with a clear head.
 - `023`: /discovery and /explore had the same existence search with no
   separate jobs. 020's rules reached only /explore, and DISCOVERY.md never
   said what it had searched, so /explore repeated it all.
+- `026`: deal-hunter opened every store's page to check Google Shopping's prices, then grew a
+  shipping reader and cashback lookup per store, web searches, SearXNG and spacing, so a new watch
+  took ~30 min. Greg's manual process is a Google search, an OzBargain check and a decision; only
+  remembering fails. No stage mapped it, and /plan's design was prose he didn't read.
