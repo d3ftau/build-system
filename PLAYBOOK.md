@@ -141,7 +141,9 @@ existing quick project adds to its list.
 A thinking partner, not an architect. It pushes on the idea, suggests
 reframes, and asks what problem is underneath. Early on it asks whether this
 already exists — searched, as two separate searches (commercial and
-open source) — and what I already run that does part of it. It works out
+open source), in my words and with the topic taken out — and what I already
+run that does part of it. That's the broad search; it writes its searches
+into DISCOVERY.md so `/explore` extends them rather than repeating (`023`). It works out
 whether this is one build or several. Skip it when I can already describe
 "done" in one sentence.
 
@@ -171,7 +173,8 @@ If the brief can't fit in a paragraph, the scope is wrong.
 The first step that touches the real world, before anything is designed.
 It starts with the platform: what's already covered, and which existing
 project already does something like this. Then it looks further — two
-separate searches, commercial and open source — and checks what each
+separate searches, commercial and open source, starting from what
+`/discovery` already searched — and checks what each
 candidate actually does now, never from recall. A candidate that needs new
 stack stays in the running with its keep-alive cost stated.
 

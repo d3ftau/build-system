@@ -87,7 +87,7 @@ When every item is ticked:
    data lives, what to back up. Check every fact against the real state, not
    memory.
 2. Report: what I can do now and how to see it, every ruling ("you'd notice"
-   first), one or two things worth understanding about how it works, and the
-   real `make check` output.
-3. Ask whether to push. The dashboard calls a quick project shipped when the
+   first) labelled `R1`, `R2`…, one or two things worth understanding about
+   how it works, and the checks in one line (failures in full).
+3. Ask with AskUserQuestion: keep or change each ruling, and whether to push. The dashboard calls a quick project shipped when the
    list is done, something runs it, and git is clean and pushed.

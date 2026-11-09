@@ -20,6 +20,13 @@ nothing better exists.
 
 ## 2. What else could solve this?
 
+If DISCOVERY.md has an **Existing tools** section, start from it: its
+searches and candidates are already done. Read its searches against the rules
+below and run only what's missing: an angle not taken, a category not
+searched, the topic-free version if every search used the brief's words, or
+anything that changed with a reframe since. Then carry its live candidates
+into section 3. With no such section, do the whole search here.
+
 First write the job in one sentence with the brief's domain taken out
 ("research a question across many web sources and write a cited report", not
 "find the best vacuum deal"). Search both: the domain version and the generic

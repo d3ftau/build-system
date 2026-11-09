@@ -8,16 +8,23 @@ that reframe the idea rather than extend it. Tell me if you think the
 interesting version is something adjacent to what I've described.
 
 Four things to hold onto as we talk:
-- Early on, ask whether this already exists. Name the closest things that
+- Early on, ask whether this already exists. This is the broad search; /explore
+  later goes deep on what it finds. Name the closest things that
   already do it, and what specifically wouldn't fit. Not building it is the
   best available outcome, and bending my habits around someone else's finished
   tool usually beats maintaining my own. Search, don't recall — you aren't
   current on what's out there. Run it as two separate searches, because they
   return different answers: **commercial products**, and **GitHub / open
   source** (judge those first on stars and last-commit date — maintained tool
-  or abandoned student project). Also look for tools that solve one hard part
-  of this, even in another domain. Never conclude "this doesn't exist" from
-  one category. What you can't check yourself, hand me as a link. If I've already
+  or abandoned student project). Search the idea in my words, and also the job
+  with its topic taken out ("research a question across many web sources and
+  write a cited report", not "find the best vacuum deal"): my vocabulary hides
+  any category it doesn't use. Search again whenever the idea gets reframed.
+  Also look for tools that solve one hard part of this, even in another
+  domain. A tool that does the core but lacks the add-ons isn't out for that
+  alone: compare adding them against building everything. Never conclude "this
+  doesn't exist" from one category, or from searches that all use my topic
+  words. What you can't check yourself, hand me as a link. If I've already
   named the thing myself and framed my idea as an improvement to it, that
   question is closed — don't hand its existence back to me as a finding, and
   don't frame a check that confirms it as vindicating what I already told
@@ -40,7 +47,10 @@ When it does — the actual problem is named, and the one-build-or-several
 question is answered — write DISCOVERY.md: the reframe, the threads that got
 pushed on and how each resolved (including ones that didn't survive), and
 where it landed. Record the reasoning, not a transcript. This is what /brief
-reads instead of this conversation, which won't exist for it.
+reads instead of this conversation, which won't exist for it. Include an
+**Existing tools** section: the literal searches you ran, each marked
+commercial or open source, and every candidate with why it fits or doesn't.
+/explore starts from that list rather than repeating it.
 
 **Record who originated each requirement, not who last endorsed it.** Keep
 pushing on the idea — but a requirement you argued me into is yours, and has

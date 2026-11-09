@@ -49,7 +49,8 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [019](open/019-a-pass-is-treated-as-progress-not-evidence.md) | "End to end early" applied to a build that has to work first time: the full rehearsal ran before the changes it should have checked, and a pass read as progress banked | OPEN (fix written, unverified) | `plan.md`, `build.md`, `checkpoint.md` (2026-11-03) | — |
 | [020](done/020-explore-searches-the-framing-not-the-job.md) | `/explore` searches the project's framing, not the job, and "nothing fits" licenses a build (shortlister never searched "deep research") | **DONE** | `explore.md`, `checkpoint.md` | 2026-11-08 |
 | [021](open/021-checkpoint-suggested-before-the-context-is-written-down.md) | `/checkpoint` is suggested before what the session learned is written down; clearing the window to run it loses it (Greg: "I wonder how much undocumented knowledge I am losing") | OPEN (fix written, unverified; measurement not done) | `build.md`, `checkpoint.md` (2026-11-08, with `022`) | — |
-| [022](open/022-checkpoint-report-unreadable-on-a-phone.md) | The /checkpoint and /build phase reports can't be acted on from a phone: colliding numbers, decisions filed as facts, code-speak, a verdict smaller than its findings | OPEN (fix written, unverified) | `checkpoint.md`, `build.md`, `plan.md` (2026-11-08) | — |
+| [022](open/022-checkpoint-report-unreadable-on-a-phone.md) | Replies can't be acted on from a phone: colliding numbers, decisions filed as facts, code-speak, a verdict smaller than its findings (first in /checkpoint and /build, then /spec: "This problem is repeating everywhere") | OPEN (fix written, unverified) | `~/.claude/CLAUDE.md` (outside this repo), `checkpoint.md`, `build.md`, `plan.md`, `spec.md`, `oneshot.md`, `stuck.md`, `brief.md` (2026-11-08/09) | — |
+| [023](open/023-discovery-and-explore-search-the-same-way.md) | /discovery and /explore run the same existence search; 020's fixes reached only /explore, and DISCOVERY.md never recorded what it searched | OPEN (fix written, unverified) | `discovery.md`, `explore.md` (2026-11-08) | — |
 
 ## Open items in detail
 
@@ -128,3 +129,6 @@ now while it's fresh; leave the fix to a dedicated session with a clear head.
   shortlister's "two small fixes" verdict sat over 8 findings that added up to
   a re-plan. Root cause: findings were graded by severity but given no fate, and
   questions sat in prose instead of a survey.
+- `023`: /discovery and /explore had the same existence search with no
+  separate jobs. 020's rules reached only /explore, and DISCOVERY.md never
+  said what it had searched, so /explore repeated it all.

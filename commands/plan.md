@@ -18,8 +18,9 @@ asked now, in one go.
 List every decision this build will force that **changes what I get or see**
 and that neither SPEC.md nor an obvious default settles: a policy, what
 happens in a case nobody named, what a message says, what gets kept or thrown
-away. Number them, and give each your recommended answer, so I can reply
-"defaults" or change two. Then wait.
+away. Ask them with AskUserQuestion: one question each, your recommended
+answer first, marked "(Recommended)", and each question readable on its own.
+At most 4 questions a call; ask the rest in later calls. Wait for the answers.
 
 Leave off anything technical with a sensible default — library choice, file
 layout, config names, lint rules. /build decides those and reports them; you
@@ -33,8 +34,8 @@ created. That last one is the clearest warning: a chain of fixes for the
 automation's own problems. For each piece that fires, one line: the effort
 to build and keep it, against what it saves me over its life (the manual
 step's length times how often it happens) or the mistakes it prevents. If
-the saving doesn't clearly win, it's a question for me with that line, not a
-task. Nothing fires, nothing to say.
+the saving doesn't clearly win, it's a survey question for me with that line,
+not a task. Nothing fires, nothing to say.
 
 ## 2. Write PLAN.md
 

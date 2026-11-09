@@ -108,6 +108,15 @@ the cap is what keeps this about my life with the app, not the spec's wording.
 
 ## 4. Stop and show me
 
-Show me both files, then list every `[ASSUMED]` item in one place, one line
-each, with what it costs to build. I'll keep or cut each. A kept one loses its
-tag — it's now my decision. A cut one comes out of the spec.
+Show me both files. Then in chat: the five situations as `B1`–`B5`, then
+every `[ASSUMED]` item as `A1`, `A2`…, one line each with what it costs to
+build. Those labels are the message's only numbering. Put the assumptions
+that are a real choice (an alternative I might prefer, or a cost that isn't
+small) first.
+
+Then ask with AskUserQuestion: one question per real choice, with your pick
+first, marked "(Recommended)", and the alternative spelled out. Then one
+question for all the rest together: keep all, or let me pick which to cut
+(then a multi-select). At most 4 questions a call; ask the rest in later
+calls. A kept one loses its tag — it's now my decision. A cut one comes out
+of the spec.

@@ -11,7 +11,8 @@ and maybe my immediate family. Nobody else uses it, nothing is sold, a missed
 or wrong day costs little. Scale every question to that.
 
 Then ask me targeted questions, ONE AT A TIME, waiting for my answer before
-asking the next. Cover only what isn't already answered: what "done" looks
+asking the next. Use AskUserQuestion where the answer has options you can
+name, with your best guess first; open questions can stay in text. Cover only what isn't already answered: what "done" looks
 like concretely, what data it needs and where that comes from, and the one or
 two ways it could go wrong that I'd actually care about. Ask up to four —
 fewer if discovery already covered some — plus the two below, which are

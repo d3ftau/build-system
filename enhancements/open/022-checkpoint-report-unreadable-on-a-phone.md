@@ -79,3 +79,27 @@ Fix in `commands/build.md`, 2026-11-08, with Greg's choices from a survey:
 
 - `~/.claude/projects/-home-greg-projects-shortlister/935658dd-4adb-4fe1-ab61-93c9a2e03ef3.jsonl`
 - `~/.claude/projects/-home-greg-projects-the-wolf/320b3bbd-e759-4143-aaed-b02ddf89f45b.jsonl`
+
+## It wasn't only these two commands (2026-11-09)
+
+deal-hunter's /spec reply had a "Five things that would bite you" list
+numbered 1–5, then "My assumptions: keep or cut each" numbered 1–15. The one
+real choice ("This is the one that really needs your call") came at #15, after
+14 items costing "none". Then came 3 unnumbered CLAUDE.md items to strike.
+usecasebot's last reply buried a "Decision for you" at the end of the text.
+Greg: *"This problem is repeating everywhere."*
+
+The general rule now lives in `~/.claude/CLAUDE.md`, "How to work with me",
+so every session gets it, inside the pipeline or not:
+- **Anything to answer goes in AskUserQuestion**, real choices first; plain
+  defaults are grouped into one keep-all question.
+- **One labelling scheme per message**, with letter prefixes, and no numbered
+  headings.
+
+Commands that told the agent to write a numbered list for Greg to answer now
+say survey instead:
+- `spec.md` §4: B/A labels, real choices first, defaults in one question;
+- `plan.md` §1: decisions asked as a survey, not "reply defaults";
+- `oneshot.md`: rulings and push asked as a survey;
+- `stuck.md`: the choice between the two approaches;
+- `brief.md`: a survey where the answer has options you can name.
