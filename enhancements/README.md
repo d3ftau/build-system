@@ -54,6 +54,7 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [024](open/024-spec-designs-in-silent-failure.md) | /spec designs in silent failure: an invented "fail 3 times" threshold held back notices of the failure the brief named, filed as a "Cost: none" assumption (Greg: "borderline insane") | OPEN | `spec.md` (not yet) | — |
 | [025](open/025-testing-model-judgment-that-cant-change-anything.md) | Model-judgment tests are designed when no result could change the build; the agent hand-scores its own model family (Greg: "you're just scoring your own ability which is a waste of tokens") | OPEN | `explore.md`, `plan.md`, `build.md` (not yet) | — |
 | [026](open/026-build-never-maps-the-manual-process-it-replaces.md) | The build never maps the manual process it replaces, so it out-builds it (30 min for what Google shows in 2 s); /plan's design is prose the user won't read (Greg: "tries too hard to be \"complete\" instead of being useable"); the flow should be core decision (buy now or wait) → quickest answer → "is it accurate enough?" | OPEN | `discovery.md`, `brief.md`, `spec.md`, `plan.md`, `build.md`, `checkpoint.md` (not yet) | — |
+| [027](open/027-build-sessions-spend-subscription-on-enumerable-steps.md) | Build sessions (~70% of Claude Code tokens) may spend subscription usage on steps code could do; nothing measures what a session spends tokens on | OPEN (undiagnosed: measure first) | `build.md`, `bin/`, hooks (not yet) | — |
 
 ## Open items in detail
 
