@@ -64,6 +64,8 @@ guidance aimed at the user rather than the agent, which the playbook owns.
 | [034](open/034-rulings-judged-in-the-abstract-not-against-output.md) | The user judges rulings in the abstract ("Keep all"), and the wrong ones are caught only when their output is seen | OPEN | `build.md`, `checkpoint.md` (not yet) | — |
 | [035](open/035-checkpoints-judge-each-phase-alone.md) | Each checkpoint judges its phase alone: five fix-first or re-plan verdicts in a row never triggered a whole-build worth-it judgement | OPEN | `checkpoint.md` (not yet) | — |
 | [036](open/036-agent-defaults-harden-into-the-users-rules.md) | The agent's defaults harden into rules that read as the user's (003's provenance fix binds only upstream, in discovery, brief and roadmap) | OPEN | `spec.md`, `plan.md`, `build.md`, `checkpoint.md` (not yet) | — |
+| [037](open/037-one-cadence-for-every-input.md) | One cadence is set for every input, never from how fast each changes (deal-hunter: hourly everywhere; store prices never changed twice a day, cashback boosts lasted hours) | OPEN | `spec.md`, `plan.md`, `checkpoint.md` (not yet) | — |
+| [038](open/038-a-filed-fix-never-reaches-the-build-that-found-it.md) | A fix filed mid-build never reaches the build that found it (026 filed 9 Nov, never bound; Phases 3–7 repeated it) | OPEN | `build.md`, `checkpoint.md`, this README (not yet) | — |
 
 ## Open items in detail
 
